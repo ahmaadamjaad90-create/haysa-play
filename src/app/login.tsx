@@ -12,7 +12,7 @@ import { colors } from '@/theme';
 
 export default function Login() {
   const insets = useSafeAreaInsets();
-  const { signIn } = useSession();
+  const { signIn, authError } = useSession();
 
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -22,13 +22,17 @@ export default function Login() {
     setErr('');
     try {
       const u = await signIn(p);
+      // null: رايحين على صفحة Google
+      if (!u) return;
       router.replace(u.ready ? '/home' : '/setup');
+      setBusy(false);
     } catch (e) {
       setErr(errorText(e));
-    } finally {
       setBusy(false);
     }
   };
+
+  const shownErr = err || authError;
 
   return (
     <View style={[styles.root, { paddingBottom: insets.bottom }]}>
@@ -55,7 +59,7 @@ export default function Login() {
           <PillButton label="المتابعة برقم الجوال" icon={<PhoneIcon />} onPress={() => router.push('/phone')} />
         </View>
 
-        {!!err && <T w="bold" style={styles.err}>{err}</T>}
+        {!!shownErr && <T w="bold" style={styles.err}>{shownErr}</T>}
 
         <T style={styles.terms}>
           بالمتابعة إنت موافق على{' '}

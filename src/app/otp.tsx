@@ -33,7 +33,7 @@ export default function Otp() {
     setErr('');
     try {
       const u = await signIn('phone', phone);
-      router.replace(u.ready ? '/home' : '/setup');
+      if (u) router.replace(u.ready ? '/home' : '/setup');
     } catch (e) {
       setErr(errorText(e));
     } finally {
