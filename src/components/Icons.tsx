@@ -166,3 +166,24 @@ export const ColorsArt = ({ size = 52 }: P) => (
     <Circle cx={43} cy={33} r={6} fill="#FFFFFF" transform="rotate(12 43 33)" />
   </Svg>
 );
+
+export const AddFriendIcon = ({ size = 20, color = '#2B1259' }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" {...stroke(color, 2.4)}>
+    <Circle cx={9} cy={8} r={4} />
+    <Path d="M2 21c0-4 3-7 7-7s7 3 7 7" />
+    <Path d="M19 8v6M16 11h6" />
+  </Svg>
+);
+
+export const SearchIcon = ({ size = 20, color = '#A794D6' }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" {...stroke(color, 2.2)}>
+    <Circle cx={11} cy={11} r={7} />
+    <Path d="M20 20l-4-4" />
+  </Svg>
+);
+
+export const CloseIcon = ({ size = 18, color = '#FFFFFF' }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" {...stroke(color, 2.6)}>
+    <Path d="M6 6l12 12M18 6L6 18" />
+  </Svg>
+);
