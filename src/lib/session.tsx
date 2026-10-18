@@ -18,6 +18,8 @@ export type User = {
 
 type Session = {
   user: User | null;
+  // معرّف الحساب الداخلي (uuid) بـ Supabase
+  uid: string | null;
   loading: boolean;
   signIn: (provider: Provider, phone?: string) => Promise<User>;
   completeSetup: (name: string, avatar: string) => Promise<void>;
@@ -101,7 +103,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <Ctx.Provider value={{ user, loading, signIn, completeSetup, signOut }}>{children}</Ctx.Provider>
+    <Ctx.Provider value={{ user, uid: auth?.user.id ?? null, loading, signIn, completeSetup, signOut }}>{children}</Ctx.Provider>
   );
 }
 

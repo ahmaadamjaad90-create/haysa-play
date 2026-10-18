@@ -20,6 +20,7 @@ export const colors = {
   textDim: '#A794D6',
   placeholder: '#7C5FC0',
   alert: '#FF5A3C',
+  sky: '#4FC3F7',
 } as const;
 
 export const fonts = {

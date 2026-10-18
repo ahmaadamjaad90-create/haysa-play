@@ -1,11 +1,12 @@
-import { router } from 'expo-router';
-import type { ReactNode } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Dalla } from '@/components/Dalla';
 import { GiftTicker } from '@/components/GiftTicker';
 import {
   BellIcon,
+  ChatIcon,
   CoinIcon,
   ColorsArt,
   HatIcon,
@@ -16,6 +17,7 @@ import {
   SpyArt,
 } from '@/components/Icons';
 import { Screen, T } from '@/components/ui';
+import { listChats } from '@/lib/chat';
 import { demoGift, demoRooms, type DemoRoom } from '@/lib/demo';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
@@ -36,6 +38,15 @@ const ROOM_ICONS: Record<DemoRoom['icon'], ReactNode> = {
 
 export default function Home() {
   const { user } = useSession();
+  const [unread, setUnread] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      listChats()
+        .then((cs) => setUnread(cs.reduce((n, c) => n + c.unread, 0)))
+        .catch(() => {});
+    }, []),
+  );
 
   return (
     <Screen>
@@ -47,6 +58,18 @@ export default function Home() {
           <Pressable accessibilityRole="button" accessibilityLabel="رصيد العملات" style={styles.coins}>
             <CoinIcon />
             <T w="black" style={{ fontSize: 16 }}>{ar(user?.coins ?? 0)}</T>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="الرسائل"
+            onPress={() => router.push('/chats')}
+            style={styles.bell}>
+            <ChatIcon />
+            {unread > 0 && (
+              <View style={styles.count}>
+                <T w="black" style={{ fontSize: 11 }}>{ar(unread > 99 ? 99 : unread)}</T>
+              </View>
+            )}
           </Pressable>
           <Pressable accessibilityRole="button" accessibilityLabel="الإشعارات" style={styles.bell}>
             <BellIcon />
@@ -167,6 +190,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.alert,
     borderWidth: 2,
     borderColor: colors.surface,
+  },
+  count: {
+    position: 'absolute',
+    top: -4,
+    start: -4,
+    minWidth: 20,
+    height: 20,
+    paddingHorizontal: 5,
+    borderRadius: 10,
+    backgroundColor: colors.alert,
+    borderWidth: 2,
+    borderColor: colors.bg,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   hero: {
     marginTop: 12,

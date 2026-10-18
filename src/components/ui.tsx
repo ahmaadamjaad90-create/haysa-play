@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import type { ReactNode } from 'react';
 import {
   Pressable,
@@ -18,8 +18,9 @@ import { BackIcon } from './Icons';
 type Weight = keyof typeof fonts;
 
 // نص بخطوط هيصة. ما نستخدم fontWeight مع الخطوط المخصصة، كل وزن إله خط.
+// writingDirection: النص اللي بيبلش بحروف إنجليزية (متل "ID ١٠٢") بيضل عاليمين
 export function T({ w = 'regular', style, ...rest }: TextProps & { w?: Weight }) {
-  return <Text {...rest} style={[{ fontFamily: fonts[w], color: colors.white }, style]} />;
+  return <Text {...rest} style={[{ fontFamily: fonts[w], color: colors.white, writingDirection: 'rtl' }, style]} />;
 }
 
 export function Screen({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
@@ -31,12 +32,12 @@ export function Screen({ children, style }: { children: ReactNode; style?: Style
   );
 }
 
-export function BackButton() {
+export function BackButton({ fallback = '/login' }: { fallback?: Href }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel="رجوع"
-      onPress={() => (router.canGoBack() ? router.back() : router.replace('/login'))}
+      onPress={() => (router.canGoBack() ? router.back() : router.replace(fallback))}
       style={styles.back}>
       <BackIcon />
     </Pressable>

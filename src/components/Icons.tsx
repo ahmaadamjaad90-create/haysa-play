@@ -187,3 +187,16 @@ export const CloseIcon = ({ size = 18, color = '#FFFFFF' }: P) => (
     <Path d="M6 6l12 12M18 6L6 18" />
   </Svg>
 );
+
+export const ChatIcon = ({ size = 22, color = '#FFFFFF' }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" {...stroke(color, 2.2)}>
+    <Path d="M4 5h16v11H9l-5 4z" />
+  </Svg>
+);
+
+// سهم الإرسال: بالعربي بيأشر لليسار
+export const SendIcon = ({ size = 22, color = '#2B1259' }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" {...stroke(color, 2.4)}>
+    <Path d="M20 12H5M11 5l-7 7 7 7" />
+  </Svg>
+);

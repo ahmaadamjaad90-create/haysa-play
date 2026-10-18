@@ -1,10 +1,10 @@
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatars';
 import { Dalla } from '@/components/Dalla';
-import { AddFriendIcon, CloseIcon, SearchIcon } from '@/components/Icons';
+import { AddFriendIcon, ChatIcon, CloseIcon, SearchIcon } from '@/components/Icons';
 import { Screen, T } from '@/components/ui';
 import { errorText } from '@/lib/errors';
 import { ar, toLatinDigits } from '@/lib/format';
@@ -134,6 +134,13 @@ export default function Friends() {
             ) : (
               friends.map((f) => (
                 <FriendRow key={f.public_id} f={f}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`مراسلة ${f.name ?? ''}`}
+                    onPress={() => router.push({ pathname: '/chat', params: { id: String(f.public_id) } })}
+                    style={[styles.small, styles.iconBtn]}>
+                    <ChatIcon size={20} />
+                  </Pressable>
                   <ConfirmButton label="حذف" confirmLabel="متأكد؟" onConfirm={() => act(() => removeFriend(f.public_id))} />
                 </FriendRow>
               ))
@@ -412,5 +419,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   small: { height: 40, paddingHorizontal: 16, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  iconBtn: { width: 40, paddingHorizontal: 0, backgroundColor: colors.surfaceHigh },
   empty: { alignItems: 'center', gap: 10, paddingVertical: 24, paddingHorizontal: 16 },
 });
