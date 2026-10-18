@@ -20,7 +20,8 @@
 src/app/            الشاشات (كل ملف = شاشة)
 src/app/(tabs)/     شاشات الشريط السفلي
 src/components/     القطع المشتركة (الدلّة، الأيقونات، الأزرار)
-src/lib/session.tsx الحساب (مؤقتاً على الجهاز، لحد ما نربط Supabase)
+src/lib/session.tsx الحساب (Supabase)
+supabase/migrations/ جداول قاعدة البيانات (بتنزل من SQL Editor)
 src/theme.ts        الألوان والخطوط
 ```
 

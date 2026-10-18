@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, TextInput, View, type TextInputInstance } from '
 
 import { ChatDotsIcon } from '@/components/Icons';
 import { BackButton, PillButton, Screen, T } from '@/components/ui';
+import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
 import { colors, fonts } from '@/theme';
@@ -16,6 +17,8 @@ export default function Otp() {
   const { signIn } = useSession();
   const [code, setCode] = useState('');
   const [left, setLeft] = useState(RESEND_SECONDS);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
   const input = useRef<TextInputInstance>(null);
 
   useEffect(() => {
@@ -26,8 +29,16 @@ export default function Otp() {
 
   const confirm = async () => {
     // TODO(Supabase): التحقق من الكود بالسيرفر. هلأ أي ٦ أرقام بتمشي.
-    const u = await signIn('phone', phone);
-    router.replace(u.ready ? '/home' : '/setup');
+    setBusy(true);
+    setErr('');
+    try {
+      const u = await signIn('phone', phone);
+      router.replace(u.ready ? '/home' : '/setup');
+    } catch (e) {
+      setErr(errorText(e));
+    } finally {
+      setBusy(false);
+    }
   };
 
   const mm = Math.floor(left / 60);
@@ -97,7 +108,9 @@ export default function Otp() {
       </T>
       <T style={styles.demo}>نسخة تجريبية: أي ٦ أرقام بتمشي لحد ما نربط الرسائل.</T>
 
-      <PillButton label="تأكيد" disabled={code.length < LEN} onPress={confirm} style={styles.cta} />
+      {!!err && <T w="bold" style={styles.err}>{err}</T>}
+
+      <PillButton label="تأكيد" disabled={code.length < LEN || busy} onPress={confirm} style={styles.cta} />
     </Screen>
   );
 }
@@ -145,5 +158,6 @@ const styles = StyleSheet.create({
   },
   resend: { marginTop: 20, marginHorizontal: 24, textAlign: 'center', fontSize: 15, color: colors.textDim },
   demo: { marginTop: 8, marginHorizontal: 24, textAlign: 'center', fontSize: 12, color: colors.placeholder },
+  err: { marginTop: 12, marginHorizontal: 24, textAlign: 'center', fontSize: 13, color: colors.peach },
   cta: { marginTop: 'auto', marginHorizontal: 24, marginBottom: 24, height: 58 },
 });

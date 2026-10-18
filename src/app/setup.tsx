@@ -6,6 +6,7 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 import { AVATARS, Avatar } from '@/components/Avatars';
 import { CopyIcon } from '@/components/Icons';
 import { PillButton, Screen, T } from '@/components/ui';
+import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
 import { colors, fonts } from '@/theme';
@@ -17,6 +18,8 @@ export default function Setup() {
   const [avatar, setAvatar] = useState(user?.avatar ?? 'dalla');
   const [name, setName] = useState(user?.name ?? '');
   const [copied, setCopied] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
 
   if (!user) return <Redirect href="/login" />;
 
@@ -27,8 +30,16 @@ export default function Setup() {
   };
 
   const done = async () => {
-    await completeSetup(name.trim(), avatar);
-    router.replace('/home');
+    setBusy(true);
+    setErr('');
+    try {
+      await completeSetup(name.trim(), avatar);
+      router.replace('/home');
+    } catch (e) {
+      setErr(errorText(e));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -97,9 +108,11 @@ export default function Setup() {
           </Pressable>
         </View>
 
+        {!!err && <T w="bold" style={styles.err}>{err}</T>}
+
         <PillButton
           label="يلا نبلش الهيصة! 🎉"
-          disabled={name.trim().length < 2}
+          disabled={name.trim().length < 2 || busy}
           onPress={done}
           style={styles.cta}
         />
@@ -154,5 +167,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
+  err: { marginHorizontal: 24, marginBottom: 12, textAlign: 'center', fontSize: 13, color: colors.peach },
   cta: { marginTop: 'auto', marginHorizontal: 24, marginBottom: 24, height: 58 },
 });

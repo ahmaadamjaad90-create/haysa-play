@@ -1,10 +1,12 @@
 import { Link, router } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Dalla } from '@/components/Dalla';
 import { AppleIcon, FacebookIcon, GoogleIcon, PhoneIcon } from '@/components/Icons';
 import { PillButton, T } from '@/components/ui';
+import { errorText } from '@/lib/errors';
 import { useSession, type Provider } from '@/lib/session';
 import { colors } from '@/theme';
 
@@ -12,9 +14,20 @@ export default function Login() {
   const insets = useSafeAreaInsets();
   const { signIn } = useSession();
 
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
   const social = async (p: Provider) => {
-    const u = await signIn(p);
-    router.replace(u.ready ? '/home' : '/setup');
+    setBusy(true);
+    setErr('');
+    try {
+      const u = await signIn(p);
+      router.replace(u.ready ? '/home' : '/setup');
+    } catch (e) {
+      setErr(errorText(e));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -36,11 +49,13 @@ export default function Login() {
         </View>
 
         <View style={styles.buttons} accessibilityLabel="طرق تسجيل الدخول">
-          <PillButton label="المتابعة مع Apple" bg={colors.white} fg="#000000" icon={<AppleIcon />} onPress={() => social('apple')} />
-          <PillButton label="المتابعة مع Google" bg={colors.white} fg="#1F1F1F" icon={<GoogleIcon />} onPress={() => social('google')} />
-          <PillButton label="المتابعة مع Facebook" bg="#1877F2" fg={colors.white} icon={<FacebookIcon />} onPress={() => social('facebook')} />
+          <PillButton label="المتابعة مع Apple" bg={colors.white} fg="#000000" icon={<AppleIcon />} disabled={busy} onPress={() => social('apple')} />
+          <PillButton label="المتابعة مع Google" bg={colors.white} fg="#1F1F1F" icon={<GoogleIcon />} disabled={busy} onPress={() => social('google')} />
+          <PillButton label="المتابعة مع Facebook" bg="#1877F2" fg={colors.white} icon={<FacebookIcon />} disabled={busy} onPress={() => social('facebook')} />
           <PillButton label="المتابعة برقم الجوال" icon={<PhoneIcon />} onPress={() => router.push('/phone')} />
         </View>
+
+        {!!err && <T w="bold" style={styles.err}>{err}</T>}
 
         <T style={styles.terms}>
           بالمتابعة إنت موافق على{' '}
@@ -81,5 +96,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: colors.textDim,
   },
+  err: { marginTop: 12, marginHorizontal: 24, textAlign: 'center', fontSize: 13, color: colors.peach },
   termsLink: { color: colors.yellow, fontFamily: 'Tajawal_700Bold' },
 });

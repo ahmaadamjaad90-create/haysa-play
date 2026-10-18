@@ -1,14 +1,13 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { Session as AuthSession } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+
+import { supabase } from './supabase';
 
 export type Provider = 'apple' | 'google' | 'facebook' | 'phone';
 
 export type User = {
-  // رقم ID ثابت ما بيتغير. مؤقتاً بينولد على الجهاز، ولما نربط Supabase
-  // بيصير السيرفر هو اللي يعطيه من تسلسل (sequence) بقاعدة البيانات.
+  // رقم ID ثابت ما بيتغير، بيعطيه السيرفر من تسلسل بقاعدة البيانات
   id: number;
-  provider: Provider;
-  phone?: string;
   name: string;
   avatar: string;
   coins: number;
@@ -25,52 +24,81 @@ type Session = {
   signOut: () => Promise<void>;
 };
 
-const KEY = 'haysa.session.v1';
+type ProfileRow = {
+  public_id: number;
+  name: string | null;
+  avatar: string;
+  coins: number;
+  gems: number;
+};
+
 const Ctx = createContext<Session | null>(null);
 
-function newPublicId() {
-  return 100000 + Math.floor(Math.random() * 900000);
+function toUser(p: ProfileRow): User {
+  return {
+    id: p.public_id,
+    name: p.name ?? '',
+    avatar: p.avatar,
+    coins: p.coins,
+    gems: p.gems,
+    ready: !!p.name,
+  };
+}
+
+async function fetchProfile(uid: string): Promise<User> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('public_id, name, avatar, coins, gems')
+    .eq('id', uid)
+    .single<ProfileRow>();
+  if (error) throw error;
+  return toUser(data);
 }
 
 export function SessionProvider({ children }: { children: ReactNode }) {
+  const [auth, setAuth] = useState<AuthSession | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    AsyncStorage.getItem(KEY)
-      .then((raw) => raw && setUser(JSON.parse(raw)))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    supabase.auth.getSession().then(async ({ data }) => {
+      setAuth(data.session);
+      if (data.session) setUser(await fetchProfile(data.session.user.id).catch(() => null));
+      setLoading(false);
+    });
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuth(session);
+      if (!session) setUser(null);
+    });
+    return () => data.subscription.unsubscribe();
   }, []);
 
-  const save = async (next: User | null) => {
-    setUser(next);
-    if (next) await AsyncStorage.setItem(KEY, JSON.stringify(next));
-    else await AsyncStorage.removeItem(KEY);
-  };
-
-  const signIn: Session['signIn'] = async (provider, phone) => {
-    // TODO(Supabase): تسجيل دخول حقيقي بـ Apple/Google/Facebook/OTP
-    const next: User = user ?? {
-      id: newPublicId(),
-      provider,
-      phone,
-      name: '',
-      avatar: 'dalla',
-      coins: 500,
-      gems: 0,
-      ready: false,
-    };
-    await save(next);
-    return next;
+  const signIn: Session['signIn'] = async () => {
+    // TODO: Apple و Google و Facebook و SMS لما نجهّز حساباتهم.
+    // هلأ كل الطرق بتعمل حساب ضيف حقيقي بالسيرفر، وبعدين منربطه بالطريقة الحقيقية.
+    let session = auth;
+    if (!session) {
+      const { data, error } = await supabase.auth.signInAnonymously();
+      if (error) throw error;
+      session = data.session;
+    }
+    if (!session) throw new Error('no session');
+    const u = await fetchProfile(session.user.id);
+    setUser(u);
+    return u;
   };
 
   const completeSetup: Session['completeSetup'] = async (name, avatar) => {
-    if (!user) return;
-    await save({ ...user, name, avatar, ready: true });
+    if (!auth) return;
+    const { error } = await supabase.from('profiles').update({ name, avatar }).eq('id', auth.user.id);
+    if (error) throw error;
+    setUser(await fetchProfile(auth.user.id));
   };
 
-  const signOut = () => save(null);
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
 
   return (
     <Ctx.Provider value={{ user, loading, signIn, completeSetup, signOut }}>{children}</Ctx.Provider>
