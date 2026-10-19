@@ -200,3 +200,31 @@ export const SendIcon = ({ size = 22, color = '#2B1259' }: P) => (
     <Path d="M20 12H5M11 5l-7 7 7 7" />
   </Svg>
 );
+
+export const MicOffIcon = ({ size = 24, color = '#FFFFFF' }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" {...stroke(color, 2.2)}>
+    <Rect x={9} y={3} width={6} height={11} rx={3} />
+    <Path d="M5 11a7 7 0 0 0 14 0" />
+    <Path d="M3 3l18 18" />
+  </Svg>
+);
+
+export const EditIcon = ({ size = 20, color = '#FFFFFF' }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" {...stroke(color, 2.2)}>
+    <Path d="M12 20h9" />
+    <Path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+  </Svg>
+);
+
+export const MinusIcon = ({ size = 26, color = '#FFFFFF' }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" {...stroke(color, 3)}>
+    <Path d="M5 12h14" />
+  </Svg>
+);
+
+export const ExitIcon = ({ size = 22, color = '#FFFFFF' }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" {...stroke(color, 2.2)}>
+    <Path d="M15 4h4v16h-4" />
+    <Path d="M10 8l-4 4 4 4M6 12h10" />
+  </Svg>
+);

@@ -92,7 +92,7 @@ export default function Home() {
             <T style={{ fontSize: 15, lineHeight: 20 }}>افتح غرفة وادعي أصحابك</T>
             <Pressable
               accessibilityRole="button"
-              onPress={() => router.push('/rooms')}
+              onPress={() => router.push('/create-room')}
               style={styles.heroBtn}>
               <PlusIcon />
               <T w="black" style={{ fontSize: 16, color: colors.ink }}>غرفة جديدة</T>
