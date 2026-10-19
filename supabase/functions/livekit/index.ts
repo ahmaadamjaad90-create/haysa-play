@@ -13,6 +13,14 @@ const cors = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// مفتاح السيرفر تبع Supabase: القديم (service_role) أو الجديد (sb_secret_...)
+function serverKey() {
+  const legacy = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (legacy) return legacy;
+  const keys = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') ?? '{}');
+  return (keys.default ?? Object.values(keys)[0]) as string;
+}
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
@@ -20,7 +28,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
 
   try {
-    const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    const admin = createClient(Deno.env.get('SUPABASE_URL')!, serverKey());
     const jwt = (req.headers.get('Authorization') ?? '').replace('Bearer ', '');
     const { data: auth } = await admin.auth.getUser(jwt);
     if (!auth.user) return json({ error: 'not signed in' }, 401);
