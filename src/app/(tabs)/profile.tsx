@@ -46,11 +46,14 @@ export default function Profile() {
           <T w="black" style={styles.amount}>{ar(user.coins)}</T>
           <T style={styles.unit}>عملات</T>
         </View>
-        <View style={styles.cell}>
+        <Pressable accessibilityRole="button" accessibilityLabel="متجر الجواهر" onPress={() => router.push('/store')} style={styles.cell}>
           <T style={{ fontSize: 20 }}>💎</T>
           <T w="black" style={styles.amount}>{ar(user.gems)}</T>
           <T style={styles.unit}>جواهر</T>
-        </View>
+          <View style={styles.plus}>
+            <T w="black" style={{ fontSize: 16, color: colors.ink }}>+</T>
+          </View>
+        </Pressable>
       </View>
 
       {isGuest && (
@@ -109,6 +112,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+  },
+  plus: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.yellow,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   amount: { fontSize: 20 },
   unit: { fontSize: 14, color: colors.textMuted },

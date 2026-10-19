@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -74,10 +75,18 @@ export function GiftSheet({
               <CoinIcon size={15} />
               <T w="black" style={{ fontSize: 13 }}>{ar(user?.coins ?? 0)}</T>
             </View>
-            <View style={styles.balance}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="متجر الجواهر"
+              onPress={() => {
+                onClose();
+                router.push('/store');
+              }}
+              style={styles.balance}>
               <T style={{ fontSize: 13 }}>💎</T>
               <T w="black" style={{ fontSize: 13 }}>{ar(user?.gems ?? 0)}</T>
-            </View>
+              <T w="black" style={{ fontSize: 14, color: colors.yellow }}>+</T>
+            </Pressable>
           </View>
 
           <T w="black" style={styles.h3}>لمين؟</T>
