@@ -1,12 +1,14 @@
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { FlatList, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Animated, FlatList, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatars';
-import { CrownIcon, EditIcon, ExitIcon, MicIcon, MicOffIcon, PlusIcon, SendIcon } from '@/components/Icons';
+import { GiftSheet } from '@/components/GiftSheet';
+import { CrownIcon, EditIcon, ExitIcon, GiftIcon, MicIcon, MicOffIcon, PlusIcon, SendIcon } from '@/components/Icons';
 import { BackButton, PillButton, Screen, T } from '@/components/ui';
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
+import { giftByKey, type GiftEvent } from '@/lib/gifts';
 import { getRoom, type RoomRow } from '@/lib/rooms';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
@@ -69,8 +71,34 @@ export default function RoomScreen() {
 function Voice({ room, isOwner }: { room: RoomRow; isOwner: boolean }) {
   const v = useVoiceRoom(room.number, room.seats, String(room.number));
   const [text, setText] = useState('');
+  const [giftOpen, setGiftOpen] = useState(false);
+  const [burst, setBurst] = useState<GiftEvent | null>(null);
   const listRef = useRef<FlatList>(null);
   const onMic = v.seats.filter(Boolean).length;
+  const { addLine } = v;
+
+  // الهدايا بهالغرفة: سطر بالدردشة وهدية كبيرة بنص الشاشة
+  useEffect(() => {
+    const ch = supabase
+      .channel(`gifts-${room.number}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'gift_events', filter: `room_number=eq.${room.number}` },
+        ({ new: e }) => {
+          const ev = e as GiftEvent;
+          const g = giftByKey(ev.gift_key);
+          addLine({
+            system: true,
+            text: `🎁 ${ev.sender_name} أرسل ${g?.emoji ?? ''} ${g?.name ?? ''} ×${ar(ev.qty)} لـ ${ev.recipient_name}`,
+          });
+          setBurst(ev);
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [room.number, addLine]);
 
   const send = () => {
     v.sendChat(text).catch(() => {});
@@ -161,6 +189,13 @@ function Voice({ room, isOwner }: { room: RoomRow; isOwner: boolean }) {
           maxLength={200}
           style={styles.input}
         />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="إرسال هدية"
+          onPress={() => setGiftOpen(true)}
+          style={styles.barBtn}>
+          <GiftIcon />
+        </Pressable>
         {!!text.trim() && (
           <Pressable accessibilityRole="button" accessibilityLabel="إرسال" onPress={send} style={[styles.barBtn, { backgroundColor: colors.yellow }]}>
             <SendIcon size={20} />
@@ -181,7 +216,33 @@ function Voice({ room, isOwner }: { room: RoomRow; isOwner: boolean }) {
           </>
         )}
       </View>
+      {burst && <GiftBurst key={burst.id} ev={burst} onDone={() => setBurst(null)} />}
+      <GiftSheet visible={giftOpen} onClose={() => setGiftOpen(false)} room={room.number} seats={v.seats} />
     </Screen>
+  );
+}
+
+// الهدية بتطلع كبيرة بنص الغرفة وبتختفي
+function GiftBurst({ ev, onDone }: { ev: GiftEvent; onDone: () => void }) {
+  const [a] = useState(() => new Animated.Value(0));
+  const g = giftByKey(ev.gift_key);
+  useEffect(() => {
+    const native = Platform.OS !== 'web';
+    Animated.sequence([
+      Animated.spring(a, { toValue: 1, useNativeDriver: native }),
+      Animated.delay(1800),
+      Animated.timing(a, { toValue: 0, duration: 400, useNativeDriver: native }),
+    ]).start(onDone);
+  }, [a, onDone]);
+  return (
+    <View pointerEvents="none" style={styles.burstWrap}>
+      <Animated.View style={[styles.burst, { opacity: a, transform: [{ scale: a.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] }) }] }]}>
+        <T style={{ fontSize: 96, lineHeight: 112 }}>{g?.emoji}</T>
+        <T w="black" style={{ fontSize: 16, textAlign: 'center' }}>
+          <T w="black" style={{ color: colors.yellow }}>{ev.sender_name}</T> ← {ev.recipient_name} ×{ar(ev.qty)}
+        </T>
+      </Animated.View>
+    </View>
   );
 }
 
@@ -336,5 +397,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  burstWrap: { position: 'absolute', top: 0, bottom: 0, start: 0, end: 0, alignItems: 'center', justifyContent: 'center' },
+  burst: { alignItems: 'center', padding: 20, borderRadius: 28, backgroundColor: 'rgba(28,10,58,0.75)' },
   micBtn: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
 });

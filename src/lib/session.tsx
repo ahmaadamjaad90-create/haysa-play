@@ -31,6 +31,8 @@ type Session = {
   // خطأ رجع من Google (مثلاً الحساب مربوط بلاعب تاني)
   authError: string;
   completeSetup: (name: string, avatar: string) => Promise<void>;
+  // بعد ما السيرفر يغيّر الرصيد (هدية، شراء...)
+  setBalance: (coins: number, gems: number) => void;
   signOut: () => Promise<void>;
 };
 
@@ -154,6 +156,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         linkGoogle,
         authError,
         completeSetup,
+        setBalance: (coins, gems) => setUser((u) => (u ? { ...u, coins, gems } : u)),
         signOut,
       }}>{children}</Ctx.Provider>
   );

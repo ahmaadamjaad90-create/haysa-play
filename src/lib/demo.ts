@@ -1,13 +1,4 @@
 // بيانات تجريبية للعرض لحد ما نربط Supabase و LiveKit
-import type { GiftAnnouncement } from '@/components/GiftTicker';
-
-export const demoGift: GiftAnnouncement = {
-  sender: 'أبو سعد',
-  gift: 'أسد',
-  emoji: '🦁',
-  room: 'سهرة بلوت',
-};
-
 export type DemoRoom = {
   id: string;
   name: string;

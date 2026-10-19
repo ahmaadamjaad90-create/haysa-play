@@ -203,6 +203,7 @@ export function useVoiceRoom(number: number, seatsCount: number, ownerIdentity: 
     micOn,
     needsAudioTap,
     chat,
+    addLine,
     takeSeat,
     leaveSeat,
     toggleMic,

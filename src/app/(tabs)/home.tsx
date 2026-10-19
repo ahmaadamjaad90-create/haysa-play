@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Dalla } from '@/components/Dalla';
@@ -18,7 +18,9 @@ import {
 } from '@/components/Icons';
 import { Screen, T } from '@/components/ui';
 import { listChats } from '@/lib/chat';
-import { demoGift, demoRooms, type DemoRoom } from '@/lib/demo';
+import { demoRooms, type DemoRoom } from '@/lib/demo';
+import { giftByKey, latestAnnouncement, type GiftEvent } from '@/lib/gifts';
+import { supabase } from '@/lib/supabase';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
 import { colors } from '@/theme';
@@ -39,6 +41,21 @@ const ROOM_ICONS: Record<DemoRoom['icon'], ReactNode> = {
 export default function Home() {
   const { user } = useSession();
   const [unread, setUnread] = useState(0);
+  const [banner, setBanner] = useState<GiftEvent | null>(null);
+
+  // شريط الهدايا الكبيرة (الأسد وفوق): آخر وحدة، وأي وحدة جديدة فوراً
+  useEffect(() => {
+    latestAnnouncement().then(setBanner).catch(() => {});
+    const ch = supabase
+      .channel('home-banner')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'gift_events', filter: 'announce=eq.true' }, (p) =>
+        setBanner(p.new as GiftEvent),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -78,7 +95,18 @@ export default function Home() {
         </View>
       </View>
 
-      <GiftTicker item={demoGift} />
+      {banner && (
+        <GiftTicker
+          key={banner.id}
+          item={{
+            sender: banner.sender_name,
+            gift: giftByKey(banner.gift_key)?.name ?? '',
+            emoji: giftByKey(banner.gift_key)?.emoji ?? '🎁',
+            room: banner.room_name,
+          }}
+          onPress={() => router.push({ pathname: '/room', params: { id: String(banner.room_number) } })}
+        />
+      )}
 
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>

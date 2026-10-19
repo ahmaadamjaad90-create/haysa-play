@@ -228,3 +228,12 @@ export const ExitIcon = ({ size = 22, color = '#FFFFFF' }: P) => (
     <Path d="M10 8l-4 4 4 4M6 12h10" />
   </Svg>
 );
+
+export const GiftIcon = ({ size = 24, color = '#FFFFFF' }: P) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" {...stroke(color)}>
+    <Rect x={3} y={8} width={18} height={4} rx={1} />
+    <Rect x={5} y={12} width={14} height={9} rx={1} />
+    <Path d="M12 8v13" />
+    <Path d="M12 8C10 4 6 5 7 8M12 8c2-4 6-3 5 0" />
+  </Svg>
+);
