@@ -7,6 +7,7 @@ import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
 import { CATEGORIES, sendGift, useGifts, type Gift, type GiftCategory } from '@/lib/gifts';
 import { useSession } from '@/lib/session';
+import { VIP_GIFTS_LEVEL, levelOf } from '@/lib/vip';
 import type { Seat } from '@/lib/useVoiceRoom';
 import { colors } from '@/theme';
 import { Avatar } from './Avatars';
@@ -28,7 +29,7 @@ export function GiftSheet({
   seats: (Seat | null)[];
 }) {
   const insets = useSafeAreaInsets();
-  const { user, setBalance } = useSession();
+  const { user, setBalance, patchUser } = useSession();
   // المستلمين: كل اللي على المايك إلا أنا
   const people = seats.filter((s): s is Seat => !!s && !s.isMe);
   const [to, setTo] = useState<string | 'all' | null>(null);
@@ -46,6 +47,8 @@ export function GiftSheet({
   const total = gift ? gift.price * qty * recipients.length : 0;
   const balance = gift?.currency === 'gems' ? (user?.gems ?? 0) : (user?.coins ?? 0);
   const enough = total > 0 && total <= balance;
+  // قسم VIP بس لأصحاب الذهبي وفوق
+  const locked = category === 'vip' && levelOf(user?.vipPoints ?? 0) < VIP_GIFTS_LEVEL;
 
   const send = async () => {
     if (!gift) return;
@@ -54,10 +57,11 @@ export function GiftSheet({
     try {
       const b = await sendGift(room, gift.key, qty, recipients.map(Number));
       setBalance(b.coins, b.gems);
+      if (gift.currency === 'gems') patchUser({ vipPoints: (user?.vipPoints ?? 0) + total });
       onClose();
     } catch (e) {
       const text = errorText(e);
-      setMsg(text.includes('insufficient') ? 'رصيدك ما بيكفي' : text);
+      setMsg(text.includes('insufficient') ? 'رصيدك ما بيكفي' : text.includes('vip only') ? 'هدايا VIP للذهبي وفوق' : text);
     } finally {
       setBusy(false);
     }
@@ -160,7 +164,19 @@ export function GiftSheet({
             ))}
           </ScrollView>
 
-          {gift?.announce && <T w="bold" style={styles.note}>📣 {gift.name} بيطلع إعلان بالرئيسية باسمك</T>}
+          {locked && (
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => {
+                onClose();
+                router.push('/vip');
+              }}>
+              <T w="bold" style={[styles.note, { color: colors.yellow }]}>
+                🔒 هدايا VIP بتفتح من الذهبي ١ (VIP {ar(VIP_GIFTS_LEVEL)}) · شوف مسار VIP
+              </T>
+            </Pressable>
+          )}
+          {gift?.announce && !locked && <T w="bold" style={styles.note}>📣 {gift.name} بيطلع إعلان بالرئيسية باسمك</T>}
           {!!msg && <T w="bold" style={[styles.note, { color: colors.peach }]}>{msg}</T>}
 
           <View style={styles.footer}>
@@ -176,11 +192,11 @@ export function GiftSheet({
             ))}
             <Pressable
               accessibilityRole="button"
-              disabled={!enough || busy}
+              disabled={!enough || busy || locked}
               onPress={send}
-              style={[styles.send, (!enough || busy) && { opacity: 0.5 }]}>
+              style={[styles.send, (!enough || busy || locked) && { opacity: 0.5 }]}>
               <T w="black" style={{ fontSize: 17, color: colors.ink }}>
-                {recipients.length === 0 ? 'اختار حدا أول' : total > balance ? 'رصيدك ما بيكفي' : `أرسل ${gift?.currency === 'gems' ? '💎' : '🪙'} ${ar(total.toLocaleString('en'))}`}
+                {locked ? '🔒 للذهبي وفوق' : recipients.length === 0 ? 'اختار حدا أول' : total > balance ? 'رصيدك ما بيكفي' : `أرسل ${gift?.currency === 'gems' ? '💎' : '🪙'} ${ar(total.toLocaleString('en'))}`}
               </T>
             </Pressable>
           </View>

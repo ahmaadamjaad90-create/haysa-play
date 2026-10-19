@@ -13,6 +13,7 @@ export type User = {
   avatar: string;
   coins: number;
   gems: number;
+  vipPoints: number;
   // false لحد ما يخلص شاشة "خلّينا نعرفك"
   ready: boolean;
 };
@@ -33,6 +34,8 @@ type Session = {
   completeSetup: (name: string, avatar: string) => Promise<void>;
   // بعد ما السيرفر يغيّر الرصيد (هدية، شراء...)
   setBalance: (coins: number, gems: number) => void;
+  // بعد ما السيرفر يغيّر أي شي تاني (نقاط VIP...)
+  patchUser: (patch: Partial<User>) => void;
   signOut: () => Promise<void>;
 };
 
@@ -42,6 +45,7 @@ type ProfileRow = {
   avatar: string;
   coins: number;
   gems: number;
+  vip_points: number;
 };
 
 const Ctx = createContext<Session | null>(null);
@@ -70,6 +74,7 @@ function toUser(p: ProfileRow): User {
     avatar: p.avatar,
     coins: p.coins,
     gems: p.gems,
+    vipPoints: p.vip_points,
     ready: !!p.name,
   };
 }
@@ -77,7 +82,7 @@ function toUser(p: ProfileRow): User {
 async function fetchProfile(uid: string): Promise<User> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('public_id, name, avatar, coins, gems')
+    .select('public_id, name, avatar, coins, gems, vip_points')
     .eq('id', uid)
     .single<ProfileRow>();
   if (error) throw error;
@@ -157,6 +162,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         authError,
         completeSetup,
         setBalance: (coins, gems) => setUser((u) => (u ? { ...u, coins, gems } : u)),
+        patchUser: (patch) => setUser((u) => (u ? { ...u, ...patch } : u)),
         signOut,
       }}>{children}</Ctx.Provider>
   );

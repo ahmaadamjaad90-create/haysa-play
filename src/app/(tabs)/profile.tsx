@@ -3,12 +3,14 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Avatar } from '@/components/Avatars';
 import { CoinIcon, CopyIcon, GoogleIcon } from '@/components/Icons';
+import { Avatar } from '@/components/Avatars';
 import { PillButton, Screen, T } from '@/components/ui';
+import { FramedAvatar, VipBadge } from '@/components/Vip';
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
+import { levelOf } from '@/lib/vip';
 import { colors } from '@/theme';
 
 export default function Profile() {
@@ -17,6 +19,7 @@ export default function Profile() {
   const [err, setErr] = useState('');
   const [confirmOut, setConfirmOut] = useState(false);
   if (!user) return null;
+  const level = levelOf(user.vipPoints);
 
   const copy = async () => {
     await Clipboard.setStringAsync(String(user.id));
@@ -27,10 +30,17 @@ export default function Profile() {
   return (
     <Screen>
       <View style={styles.top}>
-        <View style={styles.ring}>
-          <Avatar avatar={user.avatar} size={96} />
+        {level > 0 ? (
+          <FramedAvatar avatar={user.avatar} level={level} size={96} />
+        ) : (
+          <View style={styles.ring}>
+            <Avatar avatar={user.avatar} size={96} />
+          </View>
+        )}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <T w="heading" style={styles.name}>{user.name}</T>
+          <VipBadge level={level} />
         </View>
-        <T w="heading" style={styles.name}>{user.name}</T>
         <Pressable accessibilityRole="button" accessibilityLabel="نسخ الرقم" onPress={copy} style={styles.id}>
           <T w="black" style={{ fontSize: 16 }}>
             <T w="black" style={{ color: colors.yellow }}>ID</T> {ar(user.id)}
@@ -43,12 +53,12 @@ export default function Profile() {
       <View style={styles.wallet}>
         <View style={styles.cell}>
           <CoinIcon />
-          <T w="black" style={styles.amount}>{ar(user.coins)}</T>
+          <T w="black" style={styles.amount}>{ar(user.coins.toLocaleString('en'))}</T>
           <T style={styles.unit}>عملات</T>
         </View>
         <Pressable accessibilityRole="button" accessibilityLabel="متجر الجواهر" onPress={() => router.push('/store')} style={styles.cell}>
           <T style={{ fontSize: 20 }}>💎</T>
-          <T w="black" style={styles.amount}>{ar(user.gems)}</T>
+          <T w="black" style={styles.amount}>{ar(user.gems.toLocaleString('en'))}</T>
           <T style={styles.unit}>جواهر</T>
           <View style={styles.plus}>
             <T w="black" style={{ fontSize: 16, color: colors.ink }}>+</T>

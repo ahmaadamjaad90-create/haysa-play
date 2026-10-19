@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Dalla } from '@/components/Dalla';
 import { GiftTicker } from '@/components/GiftTicker';
+import { VipDaily } from '@/components/VipDaily';
 import {
   BellIcon,
   ChatIcon,
@@ -23,6 +24,7 @@ import { latestAnnouncement, type GiftEvent } from '@/lib/gifts';
 import { supabase } from '@/lib/supabase';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
+import { canClaimDaily, loadDaily, type DailyState } from '@/lib/vip';
 import { colors } from '@/theme';
 
 // ألعاب النسخة الأولى
@@ -38,8 +40,24 @@ const ROOM_ICONS: Record<DemoRoom['icon'], ReactNode> = {
   mic: <MicIcon size={28} />,
 };
 
+// النافذة اليومية بتطلع مرة وحدة بس كل ما ينفتح التطبيق
+let dailyShown = false;
+
 export default function Home() {
-  const { user } = useSession();
+  const { user, uid } = useSession();
+  const [daily, setDaily] = useState<DailyState | null>(null);
+
+  useEffect(() => {
+    if (!uid || dailyShown) return;
+    loadDaily(uid)
+      .then((d) => {
+        if (canClaimDaily(d) && !dailyShown) {
+          dailyShown = true;
+          setDaily(d);
+        }
+      })
+      .catch(() => {});
+  }, [uid]);
   const [unread, setUnread] = useState(0);
   const [banner, setBanner] = useState<GiftEvent | null>(null);
 
@@ -166,6 +184,7 @@ export default function Home() {
           ))}
         </View>
       </ScrollView>
+      {daily && <VipDaily daily={daily} onClose={() => setDaily(null)} />}
     </Screen>
   );
 }
