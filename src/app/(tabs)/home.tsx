@@ -152,7 +152,7 @@ export default function Home() {
             <Pressable
               key={g.key}
               accessibilityRole="button"
-              onPress={g.key === 'ludo' ? () => router.push('/ludo') : undefined}
+              onPress={g.key === 'ludo' ? () => router.push('/ludo') : g.key === 'spy' ? () => router.push('/spy') : undefined}
               style={[styles.game, { backgroundColor: g.bg }]}>
               {g.art}
               <View style={{ gap: 2 }}>
