@@ -19,7 +19,7 @@ import {
 import { Screen, T } from '@/components/ui';
 import { listChats } from '@/lib/chat';
 import { demoRooms, type DemoRoom } from '@/lib/demo';
-import { giftByKey, latestAnnouncement, type GiftEvent } from '@/lib/gifts';
+import { latestAnnouncement, type GiftEvent } from '@/lib/gifts';
 import { supabase } from '@/lib/supabase';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
@@ -100,8 +100,8 @@ export default function Home() {
           key={banner.id}
           item={{
             sender: banner.sender_name,
-            gift: giftByKey(banner.gift_key)?.name ?? '',
-            emoji: giftByKey(banner.gift_key)?.emoji ?? '🎁',
+            gift: banner.gift_name,
+            emoji: banner.gift_emoji,
             room: banner.room_name,
           }}
           onPress={() => router.push({ pathname: '/room', params: { id: String(banner.room_number) } })}

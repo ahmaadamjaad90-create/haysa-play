@@ -8,7 +8,7 @@ import { CrownIcon, EditIcon, ExitIcon, GiftIcon, MicIcon, MicOffIcon, PlusIcon,
 import { BackButton, PillButton, Screen, T } from '@/components/ui';
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
-import { giftByKey, type GiftEvent } from '@/lib/gifts';
+import { type GiftEvent } from '@/lib/gifts';
 import { getRoom, type RoomRow } from '@/lib/rooms';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
@@ -86,10 +86,9 @@ function Voice({ room, isOwner }: { room: RoomRow; isOwner: boolean }) {
         { event: 'INSERT', schema: 'public', table: 'gift_events', filter: `room_number=eq.${room.number}` },
         ({ new: e }) => {
           const ev = e as GiftEvent;
-          const g = giftByKey(ev.gift_key);
           addLine({
             system: true,
-            text: `🎁 ${ev.sender_name} أرسل ${g?.emoji ?? ''} ${g?.name ?? ''} ×${ar(ev.qty)} لـ ${ev.recipient_name}`,
+            text: `🎁 ${ev.sender_name} أرسل ${ev.gift_emoji} ${ev.gift_name} ×${ar(ev.qty)} لـ ${ev.recipient_name}`,
           });
           setBurst(ev);
         },
@@ -225,7 +224,6 @@ function Voice({ room, isOwner }: { room: RoomRow; isOwner: boolean }) {
 // الهدية بتطلع كبيرة بنص الغرفة وبتختفي
 function GiftBurst({ ev, onDone }: { ev: GiftEvent; onDone: () => void }) {
   const [a] = useState(() => new Animated.Value(0));
-  const g = giftByKey(ev.gift_key);
   useEffect(() => {
     const native = Platform.OS !== 'web';
     Animated.sequence([
@@ -237,7 +235,7 @@ function GiftBurst({ ev, onDone }: { ev: GiftEvent; onDone: () => void }) {
   return (
     <View pointerEvents="none" style={styles.burstWrap}>
       <Animated.View style={[styles.burst, { opacity: a, transform: [{ scale: a.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] }) }] }]}>
-        <T style={{ fontSize: 96, lineHeight: 112 }}>{g?.emoji}</T>
+        <T style={{ fontSize: 96, lineHeight: 112 }}>{ev.gift_emoji}</T>
         <T w="black" style={{ fontSize: 16, textAlign: 'center' }}>
           <T w="black" style={{ color: colors.yellow }}>{ev.sender_name}</T> ← {ev.recipient_name} ×{ar(ev.qty)}
         </T>

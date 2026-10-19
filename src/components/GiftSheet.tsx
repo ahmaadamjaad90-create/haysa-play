@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
-import { GIFTS, sendGift, type Gift } from '@/lib/gifts';
+import { CATEGORIES, sendGift, useGifts, type Gift, type GiftCategory } from '@/lib/gifts';
 import { useSession } from '@/lib/session';
 import type { Seat } from '@/lib/useVoiceRoom';
 import { colors } from '@/theme';
@@ -31,19 +31,23 @@ export function GiftSheet({
   // المستلمين: كل اللي على المايك إلا أنا
   const people = seats.filter((s): s is Seat => !!s && !s.isMe);
   const [to, setTo] = useState<string | 'all' | null>(null);
-  const [currency, setCurrency] = useState<Gift['currency']>('coins');
-  const [gift, setGift] = useState<Gift>(GIFTS[0]);
+  const { gifts, error } = useGifts();
+  const [category, setCategory] = useState<GiftCategory>('popular');
+  const [picked, setPicked] = useState<Gift | null>(null);
   const [qty, setQty] = useState(1);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
 
+  const shown = gifts.filter((g) => g.category === category);
+  const gift = picked ?? shown[0] ?? null;
   const target = to ?? people[0]?.identity ?? null;
   const recipients = target === 'all' ? people.map((p) => p.identity) : target ? [target] : [];
-  const total = gift.price * qty * recipients.length;
-  const balance = gift.currency === 'coins' ? (user?.coins ?? 0) : (user?.gems ?? 0);
+  const total = gift ? gift.price * qty * recipients.length : 0;
+  const balance = gift?.currency === 'gems' ? (user?.gems ?? 0) : (user?.coins ?? 0);
   const enough = total > 0 && total <= balance;
 
   const send = async () => {
+    if (!gift) return;
     setBusy(true);
     setMsg('');
     try {
@@ -111,42 +115,43 @@ export function GiftSheet({
             </ScrollView>
           )}
 
-          <View style={styles.tabs}>
-            {(['coins', 'gems'] as const).map((c) => (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabs}>
+            {CATEGORIES.map((c) => (
               <Pressable
-                key={c}
+                key={c.key}
                 accessibilityRole="tab"
-                accessibilityState={{ selected: currency === c }}
+                accessibilityState={{ selected: category === c.key }}
                 onPress={() => {
-                  setCurrency(c);
-                  setGift(GIFTS.find((g) => g.currency === c)!);
+                  setCategory(c.key);
+                  setPicked(null);
                 }}
-                style={[styles.tab, currency === c && { backgroundColor: colors.purple }]}>
-                <T w={currency === c ? 'black' : 'bold'} style={{ fontSize: 14, color: currency === c ? colors.white : colors.textMuted }}>
-                  {c === 'coins' ? '🪙 بالعملات' : '💎 بالجواهر'}
+                style={[styles.tab, category === c.key && { backgroundColor: colors.purple }]}>
+                <T w={category === c.key ? 'black' : 'bold'} style={{ fontSize: 14, color: category === c.key ? colors.white : colors.textMuted }}>
+                  {c.label}
                 </T>
               </Pressable>
             ))}
-          </View>
+          </ScrollView>
 
-          <View style={styles.grid}>
-            {GIFTS.filter((g) => g.currency === currency).map((g) => (
+          {!!error && <T w="bold" style={[styles.note, { color: colors.peach }]}>{errorText(error)}</T>}
+          <ScrollView style={styles.gridScroll} contentContainerStyle={styles.grid}>
+            {shown.map((g) => (
               <Pressable
                 key={g.key}
                 accessibilityRole="button"
-                accessibilityState={{ selected: gift.key === g.key }}
-                onPress={() => setGift(g)}
-                style={[styles.gift, gift.key === g.key && styles.giftOn]}>
+                accessibilityState={{ selected: gift?.key === g.key }}
+                onPress={() => setPicked(g)}
+                style={[styles.gift, gift?.key === g.key && styles.giftOn]}>
                 <T style={{ fontSize: 32, lineHeight: 40 }}>{g.emoji}</T>
                 <T w="bold" style={{ fontSize: 12 }} numberOfLines={1}>{g.name}</T>
                 <T w="black" style={{ fontSize: 12, color: g.currency === 'coins' ? colors.yellow : '#FF8FA3' }}>
-                  {ar(g.price.toLocaleString('en'))}
+                  {g.currency === 'coins' ? '🪙' : '💎'} {ar(g.price.toLocaleString('en'))}
                 </T>
               </Pressable>
             ))}
-          </View>
+          </ScrollView>
 
-          {gift.announce && <T w="bold" style={styles.note}>📣 {gift.name} بيطلع إعلان بالرئيسية باسمك</T>}
+          {gift?.announce && <T w="bold" style={styles.note}>📣 {gift.name} بيطلع إعلان بالرئيسية باسمك</T>}
           {!!msg && <T w="bold" style={[styles.note, { color: colors.peach }]}>{msg}</T>}
 
           <View style={styles.footer}>
@@ -166,7 +171,7 @@ export function GiftSheet({
               onPress={send}
               style={[styles.send, (!enough || busy) && { opacity: 0.5 }]}>
               <T w="black" style={{ fontSize: 17, color: colors.ink }}>
-                {total > balance ? 'رصيدك ما بيكفي' : `أرسل ${gift.currency === 'coins' ? '🪙' : '💎'} ${ar(total.toLocaleString('en'))}`}
+                {total > balance ? 'رصيدك ما بيكفي' : `أرسل ${gift?.currency === 'gems' ? '💎' : '🪙'} ${ar(total.toLocaleString('en'))}`}
               </T>
             </Pressable>
           </View>
@@ -206,17 +211,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   selectedRing: { borderWidth: 3, borderStyle: 'solid', borderColor: colors.yellow },
-  tabs: {
-    marginTop: 12,
-    height: 40,
-    padding: 4,
-    borderRadius: 20,
+  tabs: { marginTop: 12, gap: 6, paddingHorizontal: 2 },
+  tab: {
+    height: 36,
+    paddingHorizontal: 16,
+    borderRadius: 18,
     backgroundColor: colors.surface,
-    flexDirection: 'row',
-    gap: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  tab: { flex: 1, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  grid: { marginTop: 10, flexDirection: 'row', flexWrap: 'wrap' },
+  gridScroll: { marginTop: 10, maxHeight: 300 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap' },
   gift: { width: '25%', height: 92, paddingVertical: 6, borderRadius: 16, alignItems: 'center', gap: 2 },
   giftOn: { backgroundColor: '#3A1D72', borderWidth: 2, borderColor: colors.yellow },
   note: { marginTop: 8, textAlign: 'center', fontSize: 12, color: colors.peach },
