@@ -149,7 +149,11 @@ export default function Home() {
         <Section title="ألعاب هيصة" />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.games}>
           {GAMES.map((g) => (
-            <Pressable key={g.key} accessibilityRole="button" style={[styles.game, { backgroundColor: g.bg }]}>
+            <Pressable
+              key={g.key}
+              accessibilityRole="button"
+              onPress={g.key === 'ludo' ? () => router.push('/ludo') : undefined}
+              style={[styles.game, { backgroundColor: g.bg }]}>
               {g.art}
               <View style={{ gap: 2 }}>
                 <T w="heading" style={{ fontSize: 24, lineHeight: 30, color: g.fg }}>{g.name}</T>
