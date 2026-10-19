@@ -73,7 +73,7 @@ export function GiftSheet({
             <T w="heading" style={{ flex: 1, fontSize: 26, lineHeight: 34 }}>أرسل هدية 🎁</T>
             <View style={styles.balance}>
               <CoinIcon size={15} />
-              <T w="black" style={{ fontSize: 13 }}>{ar(user?.coins ?? 0)}</T>
+              <T w="black" style={{ fontSize: 13 }}>{ar((user?.coins ?? 0).toLocaleString('en'))}</T>
             </View>
             <Pressable
               accessibilityRole="button"
@@ -84,14 +84,14 @@ export function GiftSheet({
               }}
               style={styles.balance}>
               <T style={{ fontSize: 13 }}>💎</T>
-              <T w="black" style={{ fontSize: 13 }}>{ar(user?.gems ?? 0)}</T>
+              <T w="black" style={{ fontSize: 13 }}>{ar((user?.gems ?? 0).toLocaleString('en'))}</T>
               <T w="black" style={{ fontSize: 14, color: colors.yellow }}>+</T>
             </Pressable>
           </View>
 
           <T w="black" style={styles.h3}>لمين؟</T>
           {people.length === 0 ? (
-            <T style={{ fontSize: 14, color: colors.textDim }}>ما في حدا على المايك هلأ</T>
+            <T style={{ fontSize: 14, color: colors.textDim }}>ما في حدا على المايك هلأ. لازم حدا يطلع عالمايك عشان تبعتله</T>
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, padding: 2 }}>
               {people.length > 1 && (
@@ -180,7 +180,7 @@ export function GiftSheet({
               onPress={send}
               style={[styles.send, (!enough || busy) && { opacity: 0.5 }]}>
               <T w="black" style={{ fontSize: 17, color: colors.ink }}>
-                {total > balance ? 'رصيدك ما بيكفي' : `أرسل ${gift?.currency === 'gems' ? '💎' : '🪙'} ${ar(total.toLocaleString('en'))}`}
+                {recipients.length === 0 ? 'اختار حدا أول' : total > balance ? 'رصيدك ما بيكفي' : `أرسل ${gift?.currency === 'gems' ? '💎' : '🪙'} ${ar(total.toLocaleString('en'))}`}
               </T>
             </Pressable>
           </View>
