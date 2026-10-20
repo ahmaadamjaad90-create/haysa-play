@@ -1,5 +1,5 @@
-// إيميل التواصل اللي بيطلع بصفحات الخصوصية والشروط (فاضي لحد ما صاحب التطبيق يختار واحد)
-export const CONTACT_EMAIL = '';
+// إيميل التواصل اللي بيطلع بصفحات الخصوصية والشروط
+export const CONTACT_EMAIL = 'ahmaad.amjaad90@icloud.com';
 
 // الأسطر اللي فيها الإيميل بتختفي إذا ما في إيميل
 export const withEmail = (lines: string[]) => (CONTACT_EMAIL ? lines : []);
