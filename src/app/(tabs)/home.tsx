@@ -50,6 +50,15 @@ const GAMES: { key: string; name: string; players: string; bg: string; fg: strin
     art: <T style={{ fontSize: 44, lineHeight: 52 }}>🎨</T>,
     route: '/draw',
   },
+  {
+    key: 'mafia',
+    name: 'المافيا',
+    players: '٤ إلى ١٢',
+    bg: '#3A1D72',
+    fg: colors.white,
+    art: <T style={{ fontSize: 44, lineHeight: 52 }}>🔪</T>,
+    route: '/mafia',
+  },
 ];
 
 const ROOM_ICONS: Record<DemoRoom['icon'], ReactNode> = {
