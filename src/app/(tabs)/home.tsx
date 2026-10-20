@@ -68,6 +68,15 @@ const GAMES: { key: string; name: string; players: string; bg: string; fg: strin
     art: <T style={{ fontSize: 44, lineHeight: 52 }}>🔑</T>,
     route: '/codewords',
   },
+  {
+    key: 'domino',
+    name: 'دومينو',
+    players: '٢ إلى ٤',
+    bg: '#1F6B4A',
+    fg: colors.white,
+    art: <T style={{ fontSize: 44, lineHeight: 52 }}>🁫</T>,
+    route: '/domino',
+  },
 ];
 
 const ROOM_ICONS: Record<DemoRoom['icon'], ReactNode> = {
