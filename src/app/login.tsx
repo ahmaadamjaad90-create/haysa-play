@@ -63,8 +63,8 @@ export default function Login() {
 
         <T style={styles.terms}>
           بالمتابعة إنت موافق على{' '}
-          <Link href="/login" style={styles.termsLink}>شروط الاستخدام</Link> و
-          <Link href="/login" style={styles.termsLink}>سياسة الخصوصية</Link>
+          <Link href="/terms" style={styles.termsLink}>شروط الاستخدام</Link> و
+          <Link href="/privacy" style={styles.termsLink}>سياسة الخصوصية</Link>
         </T>
       </View>
     </View>

@@ -1,5 +1,5 @@
 import * as Clipboard from 'expo-clipboard';
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -10,6 +10,7 @@ import { FramedAvatar, VipBadge } from '@/components/Vip';
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
+import { supabase } from '@/lib/supabase';
 import { levelTitle, useXp, xpLevel } from '@/lib/level';
 import { levelOf } from '@/lib/vip';
 import { colors } from '@/theme';
@@ -20,6 +21,8 @@ export default function Profile() {
   const [copied, setCopied] = useState(false);
   const [err, setErr] = useState('');
   const [confirmOut, setConfirmOut] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   if (!user) return null;
   const level = levelOf(user.vipPoints);
 
@@ -99,6 +102,33 @@ export default function Profile() {
         }}
         style={styles.out}
       />
+      <View style={styles.footer}>
+        <Pressable
+          accessibilityRole="button"
+          disabled={deleting}
+          onPress={async () => {
+            // ضغطتين: الأولى بتسأل، التانية بتحذف كل شي وما بيرجع
+            if (!confirmDelete) return setConfirmDelete(true);
+            setDeleting(true);
+            const { error } = await supabase.rpc('delete_my_account');
+            if (error) {
+              setErr(errorText(error));
+              setDeleting(false);
+              return;
+            }
+            await signOut();
+            router.replace('/login');
+          }}>
+          <T w="bold" style={{ fontSize: 13, color: confirmDelete ? colors.alert : colors.textDim, textAlign: 'center' }}>
+            {deleting ? 'عم ينحذف...' : confirmDelete ? 'متأكد؟ كل شي بينحذف وما بيرجع. اضغط كمان مرة' : 'حذف الحساب'}
+          </T>
+        </Pressable>
+        <T style={{ fontSize: 12, color: colors.textDim, textAlign: 'center' }}>
+          <Link href="/privacy" style={styles.link}>سياسة الخصوصية</Link>
+          {' · '}
+          <Link href="/terms" style={styles.link}>شروط الاستخدام</Link>
+        </T>
+      </View>
     </Screen>
   );
 }
@@ -174,5 +204,7 @@ const styles = StyleSheet.create({
   barFill: { height: '100%', borderRadius: 5, backgroundColor: colors.yellow },
   guest: { marginTop: 20, marginHorizontal: 20, padding: 16, borderRadius: 20, backgroundColor: colors.surface, gap: 10 },
   err: { marginTop: 10, marginHorizontal: 20, textAlign: 'center', fontSize: 13, color: colors.peach },
-  out: { marginTop: 'auto', marginHorizontal: 20, marginBottom: 24 },
+  out: { marginTop: 'auto', marginHorizontal: 20 },
+  footer: { marginTop: 12, marginBottom: 16, marginHorizontal: 20, gap: 10 },
+  link: { color: colors.textMuted, textDecorationLine: 'underline' },
 });
