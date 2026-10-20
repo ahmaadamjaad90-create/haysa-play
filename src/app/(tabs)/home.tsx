@@ -95,6 +95,15 @@ const GAMES: { key: string; name: string; players: string; bg: string; fg: strin
     art: <T style={{ fontSize: 44, lineHeight: 52 }}>🃏</T>,
     route: '/kout',
   },
+  {
+    key: 'baloot',
+    name: 'البلوت',
+    players: '٤ لاعبين',
+    bg: '#8A4E2C',
+    fg: colors.white,
+    art: <T style={{ fontSize: 44, lineHeight: 52 }}>♠️</T>,
+    route: '/baloot',
+  },
 ];
 
 const ROOM_ICONS: Record<DemoRoom['icon'], ReactNode> = {
