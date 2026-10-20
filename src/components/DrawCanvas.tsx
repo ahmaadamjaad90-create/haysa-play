@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { PanResponder, StyleSheet, View, type ViewStyle } from "react-native";
+import { PanResponder, Platform, StyleSheet, View, type ViewStyle } from "react-native";
 import Svg, { Circle, Path } from "react-native-svg";
 
 import type { Stroke } from "@/lib/draw";
@@ -115,7 +115,7 @@ export function DrawCanvas({
 }
 
 // على الويب: الإصبع بيرسم بدل ما يحرّك الصفحة
-const NO_SCROLL = { touchAction: "none" } as unknown as ViewStyle;
+const NO_SCROLL = Platform.OS === "web" ? ({ touchAction: "none" } as unknown as ViewStyle) : null;
 
 const styles = StyleSheet.create({
   board: {

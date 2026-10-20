@@ -7,10 +7,8 @@ import {
 } from 'livekit-client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { attachAudio, detachAudio, startVoice, stopVoice } from './livekitPlatform';
 import { getVoiceToken } from './rooms';
-
-// TODO(الجوال): livekit-client بيشتغل بالمتصفح. على iOS/Android منحتاج @livekit/react-native
-// و registerGlobals() ونسخة development build.
 
 export type Seat = {
   identity: string;
@@ -116,10 +114,10 @@ export function useVoiceRoom(number: number, seatsCount: number, ownerIdentity: 
       .on(RoomEvent.ActiveSpeakersChanged, refresh)
       .on(RoomEvent.TrackSubscribed, (track: RemoteTrack) => {
         // صوت الناس: عنصر audio مخفي بالصفحة
-        if (track.kind === Track.Kind.Audio) document.body.appendChild(track.attach());
+        if (track.kind === Track.Kind.Audio) attachAudio(track);
       })
       .on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack) => {
-        track.detach().forEach((el) => el.remove());
+        detachAudio(track);
       })
       .on(RoomEvent.AudioPlaybackStatusChanged, () => setNeedsAudioTap(!room.canPlaybackAudio))
       .on(RoomEvent.DataReceived, (payload, participant) => {
@@ -135,6 +133,8 @@ export function useVoiceRoom(number: number, seatsCount: number, ownerIdentity: 
     (async () => {
       try {
         const { token, url, isOwner } = await getVoiceToken(number);
+        if (cancelled) return;
+        await startVoice();
         if (cancelled) return;
         await room.connect(url, token);
         if (cancelled) return room.disconnect();
@@ -153,6 +153,7 @@ export function useVoiceRoom(number: number, seatsCount: number, ownerIdentity: 
     return () => {
       cancelled = true;
       room.disconnect();
+      stopVoice().catch(() => {});
       roomRef.current = null;
     };
   }, [number, addLine, refresh]);

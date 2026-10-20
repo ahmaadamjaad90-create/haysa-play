@@ -1,4 +1,6 @@
 import type { Session as AuthSession } from '@supabase/supabase-js';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { Platform } from 'react-native';
 
@@ -55,6 +57,37 @@ const isWeb = Platform.OS === 'web';
 // بعد Google منرجع لأول صفحة بالتطبيق
 function webHome() {
   return `${window.location.origin}/haysa-play/`;
+}
+
+// على الجوال: صفحة Google بتفتح بمتصفح جوّا التطبيق، وبترجع على haysaplay://auth-callback
+// ومعها التوكنات بالرابط (#access_token=...&refresh_token=...)
+type OAuthStart = (redirectTo: string) => Promise<{ data: { url?: string | null } | null; error: Error | null }>;
+
+async function nativeOAuth(start: OAuthStart) {
+  const redirectTo = Linking.createURL('auth-callback');
+  const { data, error } = await start(redirectTo);
+  if (error) throw error;
+  if (!data?.url) throw new Error('no auth url');
+  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+  // سكّر الصفحة بدون ما يكمّل
+  if (result.type !== 'success') return false;
+  // URL بالجوال ناقص، فمنقسم الرابط بإيدنا
+  const [beforeHash, hash = ''] = result.url.split('#');
+  const params = new URLSearchParams(hash || beforeHash.split('?')[1] || '');
+  const msg = params.get('error_description');
+  if (msg) throw new Error(msg.includes('already') ? 'حساب Google هاد مربوط بلاعب تاني' : msg);
+  const code = params.get('code');
+  if (code) {
+    const { error: e } = await supabase.auth.exchangeCodeForSession(code);
+    if (e) throw e;
+    return true;
+  }
+  const access_token = params.get('access_token');
+  const refresh_token = params.get('refresh_token');
+  if (!access_token || !refresh_token) throw new Error('no session');
+  const { error: e } = await supabase.auth.setSession({ access_token, refresh_token });
+  if (e) throw e;
+  return true;
 }
 
 // Google بيرجّع الخطأ بالرابط: #error_description=...
@@ -117,7 +150,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       return null;
     }
-    // TODO: Apple و Facebook و SMS، و Google على الجوال.
+    if (provider === 'google') {
+      const ok = await nativeOAuth((redirectTo) =>
+        supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo, skipBrowserRedirect: true } }),
+      );
+      if (!ok) return null;
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) throw new Error('no session');
+      const u = await fetchProfile(data.session.user.id);
+      setUser(u);
+      return u;
+    }
+    // TODO: Apple و Facebook و SMS.
     // هلأ هدول بيعملوا حساب ضيف حقيقي بالسيرفر، وبعدين منربطه بالطريقة الحقيقية.
     let session = auth;
     if (!session) {
@@ -139,6 +183,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   };
 
   const linkGoogle = async () => {
+    if (!isWeb) {
+      await nativeOAuth((redirectTo) =>
+        supabase.auth.linkIdentity({ provider: 'google', options: { redirectTo, skipBrowserRedirect: true } }),
+      );
+      return;
+    }
     const { error } = await supabase.auth.linkIdentity({
       provider: 'google',
       options: { redirectTo: webHome() },

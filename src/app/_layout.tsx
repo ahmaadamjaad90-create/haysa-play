@@ -11,6 +11,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { Platform, View } from 'react-native';
 
+// على الجوال: بيجهّز WebRTC لـ LiveKit قبل أي غرفة صوت
+import '@/lib/livekitPlatform';
 import { SessionProvider } from '@/lib/session';
 import { colors } from '@/theme';
 

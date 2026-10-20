@@ -1,9 +1,8 @@
 import { Room, RoomEvent, Track, type RemoteTrack } from 'livekit-client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { attachAudio, detachAudio, startVoice, stopVoice } from './livekitPlatform';
 import { supabase } from './supabase';
-
-// TODO(الجوال): متل useVoiceRoom، livekit-client بيشتغل بالمتصفح بس هلأ.
 
 export type GameChatLine = { id: string; name: string; text: string; mine?: boolean };
 
@@ -38,10 +37,10 @@ export function useGameVoice(game: string, id: number, enabled: boolean) {
 
     room
       .on(RoomEvent.TrackSubscribed, (track: RemoteTrack) => {
-        if (track.kind === Track.Kind.Audio) document.body.appendChild(track.attach());
+        if (track.kind === Track.Kind.Audio) attachAudio(track);
       })
       .on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack) => {
-        track.detach().forEach((el) => el.remove());
+        detachAudio(track);
       })
       // مين عم يحكي هلأ (بالاسم)
       .on(RoomEvent.ActiveSpeakersChanged, (ps) => setSpeaking(ps.map((p) => p.name || p.identity)))
@@ -60,6 +59,8 @@ export function useGameVoice(game: string, id: number, enabled: boolean) {
       try {
         const { token, url } = await getGameToken(game, id);
         if (cancelled) return;
+        await startVoice();
+        if (cancelled) return;
         await room.connect(url, token);
         if (cancelled) return room.disconnect();
         setConnected(true);
@@ -72,6 +73,7 @@ export function useGameVoice(game: string, id: number, enabled: boolean) {
     return () => {
       cancelled = true;
       room.disconnect();
+      stopVoice().catch(() => {});
       roomRef.current = null;
       setConnected(false);
       setMicOn(false);

@@ -22,8 +22,8 @@ export default function Login() {
     setErr('');
     try {
       const u = await signIn(p);
-      // null: رايحين على صفحة Google
-      if (!u) return;
+      // null: رايحين على صفحة Google (الويب)، أو سكّر صفحة Google (الجوال)
+      if (!u) return setBusy(false);
       router.replace(u.ready ? '/home' : '/setup');
       setBusy(false);
     } catch (e) {

@@ -43,17 +43,6 @@ export default function RoomScreen() {
 
   if (!loading && !user) return <Redirect href="/login" />;
 
-  if (Platform.OS !== 'web') {
-    return (
-      <Screen>
-        <View style={styles.header}>
-          <BackButton fallback="/rooms" />
-        </View>
-        <T style={styles.center}>الصوت بيشتغل بنسخة الويب هلأ، وعالجوال قريباً.</T>
-      </Screen>
-    );
-  }
-
   if (!room) {
     return (
       <Screen>
