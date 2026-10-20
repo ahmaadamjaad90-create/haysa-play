@@ -1,4 +1,4 @@
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, type Href } from 'expo-router';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -28,10 +28,19 @@ import { canClaimDaily, loadDaily, type DailyState } from '@/lib/vip';
 import { colors } from '@/theme';
 
 // ألعاب النسخة الأولى
-const GAMES: { key: string; name: string; players: string; bg: string; fg: string; art: ReactNode }[] = [
-  { key: 'ludo', name: 'لودو', players: '٢ إلى ٤', bg: colors.yellow, fg: colors.ink, art: <LudoArt /> },
-  { key: 'spy', name: 'الجاسوس', players: '٣ إلى ٨', bg: colors.coral, fg: colors.white, art: <SpyArt /> },
-  { key: 'colors', name: 'ألوان', players: 'لعبة ورق', bg: colors.purple, fg: colors.white, art: <ColorsArt /> },
+const GAMES: { key: string; name: string; players: string; bg: string; fg: string; art: ReactNode; route: Href }[] = [
+  { key: 'ludo', name: 'لودو', players: '٢ إلى ٤', bg: colors.yellow, fg: colors.ink, art: <LudoArt />, route: '/ludo' },
+  { key: 'spy', name: 'الجاسوس', players: '٣ إلى ٨', bg: colors.coral, fg: colors.white, art: <SpyArt />, route: '/spy' },
+  { key: 'colors', name: 'ألوان', players: 'لعبة ورق', bg: colors.purple, fg: colors.white, art: <ColorsArt />, route: '/colors' },
+  {
+    key: 'trivia',
+    name: 'تحدي الأسئلة',
+    players: 'لحد ٨',
+    bg: colors.pink,
+    fg: colors.white,
+    art: <T style={{ fontSize: 44, lineHeight: 52 }}>🧠</T>,
+    route: '/trivia',
+  },
 ];
 
 const ROOM_ICONS: Record<DemoRoom['icon'], ReactNode> = {
@@ -152,7 +161,7 @@ export default function Home() {
             <Pressable
               key={g.key}
               accessibilityRole="button"
-              onPress={g.key === 'ludo' ? () => router.push('/ludo') : g.key === 'spy' ? () => router.push('/spy') : () => router.push('/colors')}
+              onPress={() => router.push(g.route)}
               style={[styles.game, { backgroundColor: g.bg }]}>
               {g.art}
               <View style={{ gap: 2 }}>
