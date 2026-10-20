@@ -6,6 +6,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Avatar } from '@/components/Avatars';
 import { CardBack, ColorCard } from '@/components/ColorCard';
 import { BackIcon, CopyIcon } from '@/components/Icons';
+import { GameTalk } from '@/components/GameTalk';
 import { PillButton, Screen, T } from '@/components/ui';
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
@@ -51,6 +52,7 @@ export default function ColorsGameScreen() {
       ) : (
         <Play game={game} hand={hand} uid={uid} apply={apply} />
       )}
+      {game && <GameTalk game="colors" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} />}
     </Screen>
   );
 }

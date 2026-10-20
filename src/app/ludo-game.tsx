@@ -6,6 +6,7 @@ import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 're
 import { Avatar } from '@/components/Avatars';
 import { BackIcon, CopyIcon } from '@/components/Icons';
 import { Dice, LudoBoard } from '@/components/LudoBoard';
+import { GameTalk } from '@/components/GameTalk';
 import { PillButton, Screen, T } from '@/components/ui';
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
@@ -47,6 +48,7 @@ export default function LudoGameScreen() {
       ) : (
         <Play game={game} uid={uid} apply={apply} />
       )}
+      {game && <GameTalk game="ludo" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} />}
     </Screen>
   );
 }

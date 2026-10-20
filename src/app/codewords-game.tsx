@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 
 import { Avatar } from '@/components/Avatars';
 import { BackIcon, CopyIcon } from '@/components/Icons';
+import { GameTalk, talkOn, talkWidth } from '@/components/GameTalk';
 import { PillButton, Screen, T } from '@/components/ui';
 import {
   TEAMS,
@@ -55,13 +56,14 @@ export default function CodeWordsGameScreen() {
       ) : (
         <Play game={game} uid={uid} apply={apply} />
       )}
+      {game && <GameTalk game="codewords" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} />}
     </Screen>
   );
 }
 
 type Apply = (g: CodeGame | void) => void;
 
-function Header({ title, onBack, right }: { title: string; onBack: () => void; right?: ReactNode }) {
+function Header({ title, onBack, right, talk }: { title: string; onBack: () => void; right?: ReactNode; talk?: number }) {
   return (
     <View style={styles.header}>
       <Pressable accessibilityRole="button" accessibilityLabel="رجوع" onPress={onBack} style={styles.back}>
@@ -69,6 +71,7 @@ function Header({ title, onBack, right }: { title: string; onBack: () => void; r
       </Pressable>
       <T w="heading" style={styles.h1}>{title}</T>
       {right}
+      {!!talk && <View style={{ width: talk }} />}
     </View>
   );
 }
@@ -244,6 +247,7 @@ function Play({ game, uid, apply }: { game: CodeGame; uid: string | null; apply:
       <Header
         title="كلمات السر"
         onBack={onBack}
+        talk={talkOn(game.players, uid, game.status === 'finished') ? talkWidth() : 0}
         right={
           live ? (
             <View style={[styles.clock, secs <= 15 && { backgroundColor: colors.coral }]}>

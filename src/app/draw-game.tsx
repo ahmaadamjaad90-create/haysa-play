@@ -6,6 +6,7 @@ import { Pressable, ScrollView, StyleSheet, TextInput, useWindowDimensions, View
 import { Avatar } from '@/components/Avatars';
 import { DrawCanvas } from '@/components/DrawCanvas';
 import { BackIcon, CopyIcon, SendIcon } from '@/components/Icons';
+import { GameTalk, talkOn, talkWidth } from '@/components/GameTalk';
 import { PillButton, Screen, T } from '@/components/ui';
 import {
   drawSecret,
@@ -49,6 +50,7 @@ export default function DrawGameScreen() {
       ) : (
         <Play room={room} game={game} uid={uid} />
       )}
+      {game && <GameTalk game="draw" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} />}
     </Screen>
   );
 }
@@ -56,7 +58,7 @@ export default function DrawGameScreen() {
 type Room = ReturnType<typeof useDrawGame>;
 type Apply = Room['apply'];
 
-function Header({ title, onBack, right }: { title: string; onBack: () => void; right?: ReactNode }) {
+function Header({ title, onBack, right, talk }: { title: string; onBack: () => void; right?: ReactNode; talk?: number }) {
   return (
     <View style={styles.header}>
       <Pressable accessibilityRole="button" accessibilityLabel="رجوع" onPress={onBack} style={styles.back}>
@@ -64,6 +66,7 @@ function Header({ title, onBack, right }: { title: string; onBack: () => void; r
       </Pressable>
       <T w="heading" style={styles.h1}>{title}</T>
       {right}
+      {!!talk && <View style={{ width: talk }} />}
     </View>
   );
 }
@@ -232,6 +235,7 @@ function Play({ room, game, uid }: { room: Room; game: DrawGame; uid: string | n
       <Header
         title="احزر الرسمة"
         onBack={onBack}
+        talk={talkOn(game.players, uid, game.status === 'finished') ? talkWidth() : 0}
         right={
           live ? (
             <View style={[styles.clock, secs <= 10 && game.phase === 'drawing' && { backgroundColor: colors.coral }]}>

@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 
 import { Avatar } from '@/components/Avatars';
 import { BackIcon, CopyIcon, SendIcon } from '@/components/Icons';
+import { GameTalk, talkOn, talkWidth } from '@/components/GameTalk';
 import { PillButton, Screen, T } from '@/components/ui';
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
@@ -51,13 +52,14 @@ export default function MafiaGameScreen() {
       ) : (
         <Play room={room} game={game} uid={uid} />
       )}
+      {game && <GameTalk game="mafia" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} withChat={false} />}
     </Screen>
   );
 }
 
 type Room = ReturnType<typeof useMafiaGame>;
 
-function Header({ title, onBack, right }: { title: string; onBack: () => void; right?: ReactNode }) {
+function Header({ title, onBack, right, talk }: { title: string; onBack: () => void; right?: ReactNode; talk?: number }) {
   return (
     <View style={styles.header}>
       <Pressable accessibilityRole="button" accessibilityLabel="رجوع" onPress={onBack} style={styles.back}>
@@ -65,6 +67,7 @@ function Header({ title, onBack, right }: { title: string; onBack: () => void; r
       </Pressable>
       <T w="heading" style={styles.h1}>{title}</T>
       {right}
+      {!!talk && <View style={{ width: talk }} />}
     </View>
   );
 }
@@ -246,6 +249,7 @@ function Play({ room, game, uid }: { room: Room; game: MafiaGame; uid: string | 
       <Header
         title="المافيا"
         onBack={onBack}
+        talk={talkOn(game.players, uid, game.status === 'finished') ? talkWidth(false) : 0}
         right={
           live ? (
             <View style={[styles.pill, game.phase === 'night' && { backgroundColor: '#0E0520' }]}>

@@ -6,6 +6,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Avatar } from '@/components/Avatars';
 import { DominoBack, DominoTile } from '@/components/DominoTile';
 import { BackIcon, CopyIcon } from '@/components/Icons';
+import { GameTalk } from '@/components/GameTalk';
 import { PillButton, Screen, T } from '@/components/ui';
 import {
   addDomBot,
@@ -51,6 +52,7 @@ export default function DominoGameScreen() {
       ) : (
         <Play game={game} hand={hand} uid={uid} apply={apply} />
       )}
+      {game && <GameTalk game="domino" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} />}
     </Screen>
   );
 }

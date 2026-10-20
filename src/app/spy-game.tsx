@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 
 import { Avatar } from '@/components/Avatars';
 import { BackIcon, CopyIcon, SendIcon } from '@/components/Icons';
+import { GameTalk } from '@/components/GameTalk';
 import { PillButton, Screen, T } from '@/components/ui';
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
@@ -49,6 +50,7 @@ export default function SpyGameScreen() {
       ) : (
         <Play game={game} uid={uid} apply={apply} chat={chat} send={send} />
       )}
+      {game && <GameTalk game="spy" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} withChat={false} />}
     </Screen>
   );
 }

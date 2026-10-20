@@ -7,6 +7,7 @@ import { Avatar } from '@/components/Avatars';
 import { BgBoard, CHECKER } from '@/components/BgBoard';
 import { BackIcon, CopyIcon } from '@/components/Icons';
 import { Dice } from '@/components/LudoBoard';
+import { GameTalk } from '@/components/GameTalk';
 import { PillButton, Screen, T } from '@/components/ui';
 import {
   addBgBot,
@@ -49,6 +50,7 @@ export default function BackgammonGameScreen() {
       ) : (
         <Play game={game} uid={uid} apply={apply} />
       )}
+      {game && <GameTalk game="backgammon" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} />}
     </Screen>
   );
 }

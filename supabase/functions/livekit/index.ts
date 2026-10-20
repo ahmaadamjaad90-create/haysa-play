@@ -21,6 +21,21 @@ function serverKey() {
   return (keys.default ?? Object.values(keys)[0]) as string;
 }
 
+// صوت ورسائل جوّا الألعاب: اسم اللعبة ← جدولها
+const GAME_TABLES: Record<string, string> = {
+  ludo: 'ludo_games',
+  spy: 'spy_games',
+  colors: 'colors_games',
+  trivia: 'trivia_games',
+  draw: 'draw_games',
+  mafia: 'mafia_games',
+  codewords: 'code_games',
+  domino: 'dom_games',
+  backgammon: 'bg_games',
+  kout: 'kout_games',
+  baloot: 'baloot_games',
+};
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
@@ -44,10 +59,23 @@ Deno.serve(async (req) => {
       );
     }
 
-    // تذكرة دخول لغرفة
-    const number = Number(body.room);
-    const { data: room } = await admin.from('rooms').select('owner').eq('number', number).maybeSingle();
-    if (!room) return json({ error: 'room not found' }, 404);
+    // تذكرة دخول لغرفة، أو لطاولة لعبة (بس للاعبين اللي عليها)
+    let roomName: string;
+    let isOwner = false;
+    if (body.action === 'game') {
+      const table = GAME_TABLES[body.game];
+      if (!table) return json({ error: 'unknown game' }, 400);
+      const { data: game } = await admin.from(table).select('players').eq('id', Number(body.id)).maybeSingle();
+      const players = (game?.players ?? []) as { uid?: string | null }[];
+      if (!players.some((p) => p.uid === auth.user!.id)) return json({ error: 'not a player' }, 403);
+      roomName = `game-${body.game}-${Number(body.id)}`;
+    } else {
+      const number = Number(body.room);
+      const { data: room } = await admin.from('rooms').select('owner').eq('number', number).maybeSingle();
+      if (!room) return json({ error: 'room not found' }, 404);
+      roomName = String(number);
+      isOwner = room.owner === auth.user.id;
+    }
 
     const { data: me } = await admin
       .from('profiles')
@@ -63,7 +91,7 @@ Deno.serve(async (req) => {
       ttl: '6h',
     });
     token.addGrant({
-      room: String(number),
+      room: roomName,
       roomJoin: true,
       canSubscribe: true,
       canPublish: true,
@@ -72,7 +100,7 @@ Deno.serve(async (req) => {
       canUpdateOwnMetadata: true,
     });
 
-    return json({ token: await token.toJwt(), url: LIVEKIT_URL, isOwner: room.owner === auth.user.id });
+    return json({ token: await token.toJwt(), url: LIVEKIT_URL, isOwner });
   } catch (e) {
     return json({ error: String(e) }, 500);
   }

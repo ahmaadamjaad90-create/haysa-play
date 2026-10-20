@@ -6,6 +6,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Avatar } from '@/components/Avatars';
 import { BackIcon, CopyIcon } from '@/components/Icons';
 import { CardBackSmall, PlayingCard, SUITS } from '@/components/PlayingCard';
+import { GameTalk } from '@/components/GameTalk';
 import { PillButton, Screen, T } from '@/components/ui';
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
@@ -50,6 +51,7 @@ export default function BalootGameScreen() {
       ) : (
         <Play game={game} hand={hand} legal={legal} uid={uid} apply={apply} />
       )}
+      {game && <GameTalk game="baloot" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} />}
     </Screen>
   );
 }
