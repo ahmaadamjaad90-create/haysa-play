@@ -219,21 +219,22 @@ export default function Home() {
         </View>
 
         <Section title="ألعاب هيصة" />
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.games}>
-          {GAMES.map((g) => (
+        {/* أول لعبة بعرض كامل، والباقي كل تنتين جنب بعض */}
+        <View style={styles.games}>
+          {GAMES.map((g, i) => (
             <Pressable
               key={g.key}
               accessibilityRole="button"
               onPress={() => router.push(g.route)}
-              style={[styles.game, { backgroundColor: g.bg }]}>
+              style={[styles.game, i === 0 && styles.gameWide, { backgroundColor: g.bg }]}>
               {g.art}
               <View style={{ gap: 2 }}>
-                <T w="heading" style={{ fontSize: 24, lineHeight: 30, color: g.fg }}>{g.name}</T>
+                <T w="heading" style={{ fontSize: i === 0 ? 30 : 24, lineHeight: i === 0 ? 38 : 30, color: g.fg }}>{g.name}</T>
                 <T style={{ fontSize: 14, color: g.fg }}>{g.players}</T>
               </View>
             </Pressable>
           ))}
-        </ScrollView>
+        </View>
 
         <Section title="غرف حية الآن" />
         <View style={styles.rooms}>
@@ -358,15 +359,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  games: { marginTop: 12, paddingHorizontal: 20, gap: 12 },
+  games: { marginTop: 12, marginHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   game: {
-    width: 136,
+    flexGrow: 1,
+    flexBasis: '40%',
     height: 132,
     padding: 14,
     borderRadius: 22,
     justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
+  gameWide: { flexBasis: '100%', height: 120, flexDirection: 'row-reverse', alignItems: 'center', paddingHorizontal: 22 },
   rooms: { marginTop: 12, marginHorizontal: 20, gap: 10 },
   room: {
     height: 80,
