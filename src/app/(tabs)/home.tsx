@@ -2,6 +2,7 @@ import { router, useFocusEffect, type Href } from 'expo-router';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Avatar } from '@/components/Avatars';
 import { Dalla } from '@/components/Dalla';
 import { GiftTicker } from '@/components/GiftTicker';
 import { VipDaily } from '@/components/VipDaily';
@@ -19,7 +20,7 @@ import {
 } from '@/components/Icons';
 import { Screen, T } from '@/components/ui';
 import { listChats } from '@/lib/chat';
-import { demoRooms, type DemoRoom } from '@/lib/demo';
+import { getRoomStats, listRooms, type RoomRow, type RoomStats } from '@/lib/rooms';
 import { latestAnnouncement, type GiftEvent } from '@/lib/gifts';
 import { supabase } from '@/lib/supabase';
 import { ar } from '@/lib/format';
@@ -106,11 +107,12 @@ const GAMES: { key: string; name: string; players: string; bg: string; fg: strin
   },
 ];
 
-const ROOM_ICONS: Record<DemoRoom['icon'], ReactNode> = {
-  heart: <HeartIcon />,
-  hat: <HatIcon />,
-  mic: <MicIcon size={28} />,
+// أيقونة ولون كل غرفة حسب نوعها
+const ROOM_ICONS: Record<string, { icon: ReactNode; color: string }> = {
+  ألعاب: { icon: <HeartIcon />, color: '#6A35C9' },
+  هزار: { icon: <HatIcon />, color: '#D9381E' },
 };
+const roomIcon = (category: string) => ROOM_ICONS[category] ?? { icon: <MicIcon size={28} />, color: '#B4297A' };
 
 // النافذة اليومية بتطلع مرة وحدة بس كل ما ينفتح التطبيق
 let dailyShown = false;
@@ -146,6 +148,25 @@ export default function Home() {
       supabase.removeChannel(ch);
     };
   }, []);
+
+  // الغرف الحية (فيها ناس هلأ) أول، وإذا ما في، أحدث الغرف
+  const [rooms, setRooms] = useState<RoomRow[] | null>(null);
+  const [stats, setStats] = useState<RoomStats>({});
+  useFocusEffect(
+    useCallback(() => {
+      listRooms()
+        .then(setRooms)
+        .catch(() => setRooms([]));
+      getRoomStats()
+        .then(setStats)
+        .catch(() => {});
+    }, []),
+  );
+  const live = (rooms ?? []).filter((r) => (stats[r.number]?.listeners ?? 0) > 0);
+  const shownRooms = (live.length ? live : rooms ?? [])
+    .slice()
+    .sort((a, b) => (stats[b.number]?.listeners ?? 0) - (stats[a.number]?.listeners ?? 0))
+    .slice(0, 3);
 
   useFocusEffect(
     useCallback(() => {
@@ -236,29 +257,43 @@ export default function Home() {
           ))}
         </View>
 
-        <Section title="غرف حية الآن" />
+        <Section title={live.length ? 'غرف حية الآن' : 'غرف هيصة'} onAll={() => router.push('/rooms')} />
         <View style={styles.rooms}>
-          {demoRooms.map((r) => (
-            <Pressable key={r.id} accessibilityRole="button" style={styles.room}>
-              <View style={[styles.roomIcon, { backgroundColor: r.color }]}>{ROOM_ICONS[r.icon]}</View>
-              <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
-                <T w="black" style={{ fontSize: 18 }} numberOfLines={1}>{r.name}</T>
-                <T style={{ fontSize: 14, color: colors.textMuted }} numberOfLines={1}>{r.meta}</T>
+          {rooms && shownRooms.length === 0 && (
+            <Pressable accessibilityRole="button" onPress={() => router.push('/create-room')} style={styles.room}>
+              <View style={[styles.roomIcon, { backgroundColor: colors.yellow }]}>
+                <PlusIcon size={26} />
               </View>
-              <View style={styles.faces}>
-                {r.faces.map((f, i) => (
-                  <View key={i} style={[styles.face, { backgroundColor: f.color }, i > 0 && { marginStart: -9 }]}>
-                    <T w="black" style={{ fontSize: 14, color: f.color === colors.yellow ? colors.ink : colors.white }}>
-                      {f.letter}
-                    </T>
-                  </View>
-                ))}
-                <View style={[styles.face, { backgroundColor: colors.surfaceHigh, marginStart: -9 }]}>
-                  <T w="black" style={{ fontSize: 13 }}>+{ar(r.more)}</T>
-                </View>
-              </View>
+              <T w="black" style={{ fontSize: 16, flex: 1 }}>ما في غرف لسا. افتح أول غرفة!</T>
             </Pressable>
-          ))}
+          )}
+          {shownRooms.map((r) => {
+            const s = stats[r.number];
+            const ic = roomIcon(r.category);
+            return (
+              <Pressable
+                key={r.owner}
+                accessibilityRole="button"
+                onPress={() => router.push({ pathname: '/room', params: { id: String(r.number) } })}
+                style={styles.room}>
+                <View style={[styles.roomIcon, { backgroundColor: ic.color }]}>{ic.icon}</View>
+                <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
+                  <T w="black" style={{ fontSize: 18 }} numberOfLines={1}>{r.name}</T>
+                  <T style={{ fontSize: 14, color: colors.textMuted }} numberOfLines={1}>
+                    {r.category}{'\u200F · '}{s?.listeners ? `${ar(s.onMic)} على المايك · ${ar(s.listeners)} بالغرفة` : `${ar(r.seats)} مقاعد`}
+                  </T>
+                </View>
+                <View style={styles.faces}>
+                  <Avatar avatar={r.profiles?.avatar ?? 'dalla'} size={34} />
+                  {!!s?.listeners && s.listeners > 1 && (
+                    <View style={[styles.face, { backgroundColor: colors.surfaceHigh, marginStart: -9 }]}>
+                      <T w="black" style={{ fontSize: 13 }}>+{ar(s.listeners - 1)}</T>
+                    </View>
+                  )}
+                </View>
+              </Pressable>
+            );
+          })}
         </View>
       </ScrollView>
       {daily && <VipDaily daily={daily} onClose={() => setDaily(null)} />}
@@ -266,13 +301,13 @@ export default function Home() {
   );
 }
 
-function Section({ title }: { title: string }) {
+function Section({ title, onAll }: { title: string; onAll?: () => void }) {
   return (
     <View style={styles.section}>
       <T w="heading" style={{ fontSize: 24, lineHeight: 32 }}>{title}</T>
-      <Pressable accessibilityRole="button">
+      {onAll && <Pressable accessibilityRole="button" onPress={onAll}>
         <T w="bold" style={{ fontSize: 15, color: colors.yellow }}>عرض الكل</T>
-      </Pressable>
+      </Pressable>}
     </View>
   );
 }
