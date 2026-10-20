@@ -76,6 +76,11 @@
       "reactCompiler": true,
       "baseUrl": "/haysa-play"
     },
-    "owner": "ahmad_5100"
+    "owner": "ahmad_5100",
+    "extra": {
+      "eas": {
+        "projectId": "411f27ce-0670-42d2-86e1-a3aa15c55a85"
+      }
+    }
   }
 }
