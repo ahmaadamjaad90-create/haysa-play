@@ -86,6 +86,15 @@ const GAMES: { key: string; name: string; players: string; bg: string; fg: strin
     art: <T style={{ fontSize: 44, lineHeight: 52 }}>🎲</T>,
     route: '/backgammon',
   },
+  {
+    key: 'kout',
+    name: 'كوت بو ستة',
+    players: '٤ لاعبين',
+    bg: '#1F6B4A',
+    fg: colors.white,
+    art: <T style={{ fontSize: 44, lineHeight: 52 }}>🃏</T>,
+    route: '/kout',
+  },
 ];
 
 const ROOM_ICONS: Record<DemoRoom['icon'], ReactNode> = {
