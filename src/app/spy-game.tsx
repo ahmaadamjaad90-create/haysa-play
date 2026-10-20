@@ -144,17 +144,17 @@ function Waiting({ game, uid, apply }: { game: SpyGame; uid: string | null; appl
 
         <View style={styles.howTo}>
           <T w="black" style={{ fontSize: 15 }}>كيف بتنلعب؟</T>
-          <T style={styles.howLine}>١. الكل بياخد كرت فيه نفس المكان، إلا الجاسوس ما بيعرفه.</T>
-          <T style={styles.howLine}>٢. اسألوا بعض أسئلة عن المكان بدون ما تفضحوه.</T>
-          <T style={styles.howLine}>٣. لما يخلص الوقت بتصوّتوا مين الجاسوس.</T>
-          <T style={styles.howLine}>٤. الجاسوس بيربح إذا ما انمسك، أو إذا عرف المكان.</T>
+          <T style={styles.howLine}>1. الكل بياخد كرت فيه نفس المكان، إلا الجاسوس ما بيعرفه.</T>
+          <T style={styles.howLine}>2. اسألوا بعض أسئلة عن المكان بدون ما تفضحوه.</T>
+          <T style={styles.howLine}>3. لما يخلص الوقت بتصوّتوا مين الجاسوس.</T>
+          <T style={styles.howLine}>4. الجاسوس بيربح إذا ما انمسك، أو إذا عرف المكان.</T>
         </View>
 
         {!!msg && <T w="bold" style={styles.msg}>{msg}</T>}
         <View style={{ marginTop: 14, marginHorizontal: 20 }}>
           {isHost ? (
             <PillButton
-              label={n < 3 ? `بنستنى لاعبين (${ar(n)} من ٣ على الأقل)` : 'ابدأ اللعب'}
+              label={n < 3 ? `بنستنى لاعبين (${ar(n)} من 3 على الأقل)` : 'ابدأ اللعب'}
               disabled={busy || n < 3}
               onPress={start}
             />

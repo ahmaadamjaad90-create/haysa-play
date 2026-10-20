@@ -307,14 +307,14 @@ function PlayerBar({ p, active, off, me }: { p?: BgPlayer; active: boolean; off:
       <T w="black" style={{ flex: 1, fontSize: 14 }} numberOfLines={1}>
         {p.bot ? `🤖 ${p.name}` : me ? 'إنت' : p.name}
       </T>
-      <T w="bold" style={{ fontSize: 12, color: colors.textMuted }}>طلّع {ar(off)} من ١٥</T>
+      <T w="bold" style={{ fontSize: 12, color: colors.textMuted }}>طلّع {ar(off)} من 15</T>
     </View>
   );
 }
 
 function statusText(g: BgGame, uid: string | null) {
   const l = g.last;
-  if (!l) return 'اللي بيطلّع أحجاره الـ١٥ أول بيربح';
+  if (!l) return 'اللي بيطلّع أحجاره الـ15 أول بيربح';
   const p = g.players.find((x) => x.seat === l.seat);
   const mine = p?.uid === uid;
   const who = p?.name ?? '';

@@ -10,11 +10,13 @@ import { FramedAvatar, VipBadge } from '@/components/Vip';
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
+import { levelTitle, useXp, xpLevel } from '@/lib/level';
 import { levelOf } from '@/lib/vip';
 import { colors } from '@/theme';
 
 export default function Profile() {
-  const { user, signOut, isGuest, linkGoogle, authError } = useSession();
+  const { user, uid, signOut, isGuest, linkGoogle, authError } = useSession();
+  const xp = useXp(uid);
   const [copied, setCopied] = useState(false);
   const [err, setErr] = useState('');
   const [confirmOut, setConfirmOut] = useState(false);
@@ -66,6 +68,8 @@ export default function Profile() {
         </Pressable>
       </View>
 
+      {xp !== null && <XpCard xp={xp} />}
+
       {isGuest && (
         <View style={styles.guest}>
           <T w="black" style={{ fontSize: 16 }}>حسابك لسا ضيف</T>
@@ -96,6 +100,28 @@ export default function Profile() {
         style={styles.out}
       />
     </Screen>
+  );
+}
+
+// المستوى من الـ XP اللي بيجمعه اللاعب من الألعاب والهدايا
+function XpCard({ xp }: { xp: number }) {
+  const { level, into, need } = xpLevel(xp);
+  return (
+    <View style={styles.xp}>
+      <View style={styles.levelBadge}>
+        <T w="heading" style={{ fontSize: 22, lineHeight: 28, color: colors.ink }}>{ar(level)}</T>
+      </View>
+      <View style={{ flex: 1, gap: 6 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <T w="black" style={{ fontSize: 16 }}>المستوى {ar(level)} · {levelTitle(level)}</T>
+          <T w="bold" style={{ fontSize: 13, color: colors.textMuted }}>{ar(xp.toLocaleString('en'))} XP</T>
+        </View>
+        <View style={styles.bar}>
+          <View style={[styles.barFill, { width: `${Math.max(4, (into / need) * 100)}%` }]} />
+        </View>
+        <T style={{ fontSize: 12, color: colors.textMuted }}>باقي {ar(need - into)} XP للمستوى {ar(level + 1)}</T>
+      </View>
+    </View>
   );
 }
 
@@ -133,6 +159,19 @@ const styles = StyleSheet.create({
   },
   amount: { fontSize: 20 },
   unit: { fontSize: 14, color: colors.textMuted },
+  xp: {
+    marginTop: 12,
+    marginHorizontal: 20,
+    padding: 14,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  levelBadge: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.yellow, alignItems: 'center', justifyContent: 'center' },
+  bar: { height: 10, borderRadius: 5, backgroundColor: colors.surfaceHigh, overflow: 'hidden' },
+  barFill: { height: '100%', borderRadius: 5, backgroundColor: colors.yellow },
   guest: { marginTop: 20, marginHorizontal: 20, padding: 16, borderRadius: 20, backgroundColor: colors.surface, gap: 10 },
   err: { marginTop: 10, marginHorizontal: 20, textAlign: 'center', fontSize: 13, color: colors.peach },
   out: { marginTop: 'auto', marginHorizontal: 20, marginBottom: 24 },

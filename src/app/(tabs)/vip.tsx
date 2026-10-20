@@ -88,7 +88,7 @@ export default function Vip() {
       setMsg(`✅ صار عندك ${fmt(r.vip_points)} نقطة VIP`);
     } catch (e) {
       const t = errorText(e);
-      setMsg(t.includes('insufficient') ? 'جواهرك ما بتكفي' : t.includes('min') ? 'أقل شي ١٠ جواهر' : t);
+      setMsg(t.includes('insufficient') ? 'جواهرك ما بتكفي' : t.includes('min') ? 'أقل شي 10 جواهر' : t);
     } finally {
       setBusy(null);
     }
@@ -138,7 +138,7 @@ export default function Vip() {
 
           {convertOpen && (
             <View style={styles.convert}>
-              <T w="black" style={{ fontSize: 14 }}>حوّل جواهر لنقاط VIP (١ 💎 = ١ نقطة)</T>
+              <T w="black" style={{ fontSize: 14 }}>حوّل جواهر لنقاط VIP (1 💎 = 1 نقطة)</T>
               <T style={{ fontSize: 12, color: colors.textDim }}>
                 عندك 💎 {fmt(user.gems)} · وكل جوهرة بتصرفها على الهدايا كمان بتعطيك نقطة
               </T>
@@ -150,7 +150,7 @@ export default function Vip() {
                 ))}
                 <TextInput
                   value={amount}
-                  onChangeText={(t) => setAmount(t.replace(/[^0-9٠-٩]/g, ''))}
+                  onChangeText={(t) => setAmount(t.replace(/[^0-90-9]/g, ''))}
                   keyboardType="number-pad"
                   placeholder="كمية"
                   placeholderTextColor={colors.placeholder}
@@ -163,7 +163,7 @@ export default function Vip() {
                 onPress={convert}
                 style={[styles.convertBtn, (n < 10 || busy === 'convert') && { opacity: 0.5 }]}>
                 <T w="black" style={{ fontSize: 15, color: colors.ink }}>
-                  {n < 10 ? 'أقل شي ١٠' : `حوّل 💎 ${fmt(n)}`}
+                  {n < 10 ? 'أقل شي 10' : `حوّل 💎 ${fmt(n)}`}
                 </T>
               </Pressable>
               <Pressable accessibilityRole="link" onPress={() => router.push('/store')}>
@@ -182,7 +182,7 @@ export default function Vip() {
           <View style={{ flex: 1, minWidth: 0 }}>
             <T w="black" style={{ fontSize: 15 }}>نقاط VIP اليومية</T>
             <T style={{ fontSize: 12, color: colors.textMuted }}>
-              {dailyReady ? 'جاهزة! اضغط واستلم' : `استلمتها اليوم ✓ · السلسلة ${ar(state?.daily.streak ?? 0)} من ٧`}
+              {dailyReady ? 'جاهزة! اضغط واستلم' : `استلمتها اليوم ✓ · السلسلة ${ar(state?.daily.streak ?? 0)} من 7`}
             </T>
           </View>
           {dailyReady && (
@@ -274,7 +274,7 @@ export default function Vip() {
           })}
         </View>
         <T style={styles.note}>
-          هدايا قسم VIP بتفتح من الذهبي ١ (VIP {ar(VIP_GIFTS_LEVEL)}). المستوى دائم وما بينزل.
+          هدايا قسم VIP بتفتح من الذهبي 1 (VIP {ar(VIP_GIFTS_LEVEL)}). المستوى دائم وما بينزل.
         </T>
       </ScrollView>
 

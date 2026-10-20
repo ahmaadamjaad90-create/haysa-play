@@ -21,7 +21,7 @@ export type DrawGame = {
   updated_at: string;
 };
 
-// خط بالرسمة: النقاط من ٠ لـ ١٠٠٠ (x, y, x, y...) عشان تطلع نفس الشي على كل الشاشات
+// خط بالرسمة: النقاط من 0 لـ 1000 (x, y, x, y...) عشان تطلع نفس الشي على كل الشاشات
 export type Stroke = { id: string; c: string; w: number; p: number[] };
 export type DrawChat = { id: string; uid: string; name: string; text: string; ok?: boolean };
 

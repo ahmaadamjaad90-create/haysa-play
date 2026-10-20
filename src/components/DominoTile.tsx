@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-// مكان النقاط بشبكة ٣×٣ لكل رقم
+// مكان النقاط بشبكة 3×3 لكل رقم
 const PIPS: Record<number, [number, number][]> = {
   0: [],
   1: [[1, 1]],

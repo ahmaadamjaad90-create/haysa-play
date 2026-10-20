@@ -311,13 +311,13 @@ function nameOf(g: LudoGame, seat: number) {
 // شو صار آخر شي
 function statusText(g: LudoGame, uid: string | null) {
   const l = g.last;
-  if (!l) return 'أول واحد بيرمي ٦ بيطلّع حجر';
+  if (!l) return 'أول واحد بيرمي 6 بيطلّع حجر';
   const mine = g.players.find((x) => x.seat === l.seat)?.uid === uid;
   const who = nameOf(g, l.seat);
   // الفعل حسب إذا أنا ولا غيري
   const v = (meVerb: string, otherVerb: string) => (mine ? meVerb : `${who} ${otherVerb}`);
   if ('roll' in l) {
-    if (l.three_sixes) return `${v('رميت', 'رمى')} ٦ تلات مرات، راح الدور 😅`;
+    if (l.three_sixes) return `${v('رميت', 'رمى')} 6 تلات مرات، راح الدور 😅`;
     const n = ar(l.roll);
     return g.turn === l.seat && g.phase === 'move' ? `${v('رميت', 'رمى')} ${n}` : `${v('رميت', 'رمى')} ${n}، ما في حركة`;
   }

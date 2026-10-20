@@ -65,7 +65,7 @@ export function VipDaily({ daily, onClose }: { daily: DailyState; onClose: (clai
               );
             })}
           </View>
-          <T w="bold" style={{ marginTop: 6, fontSize: 11, color: colors.peach }}>إذا فوّت يوم، بترجع من يوم ١</T>
+          <T w="bold" style={{ marginTop: 6, fontSize: 11, color: colors.peach }}>إذا فوّت يوم، بترجع من يوم 1</T>
 
           <View style={styles.box}>
             <T w="black" style={{ fontSize: 15 }}>{tier ? `صندوق ال${TIERS[tier].name} اليومي` : 'صندوق اليوم'}</T>

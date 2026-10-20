@@ -38,7 +38,7 @@ export default function Phone() {
           <PhoneIcon size={36} color={colors.yellow} />
         </View>
         <T w="heading" style={styles.h1}>رقم جوالك</T>
-        <T style={styles.lead}>رح نبعتلك كود من ٦ أرقام بالرسائل عشان نتأكد إنه رقمك.</T>
+        <T style={styles.lead}>رح نبعتلك كود من 6 أرقام بالرسائل عشان نتأكد إنه رقمك.</T>
       </View>
 
       <View style={styles.field}>

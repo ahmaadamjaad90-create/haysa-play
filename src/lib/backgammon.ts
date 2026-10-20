@@ -9,7 +9,7 @@ export type BgGame = {
   host: string | null;
   status: 'waiting' | 'playing' | 'finished';
   players: BgPlayer[];
-  // board[i-1] = البيت i: موجب للاعب ٠، سالب للاعب ١
+  // board[i-1] = البيت i: موجب للاعب 0، سالب للاعب 1
   board: number[];
   bar: [number, number];
   off: [number, number];

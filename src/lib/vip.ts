@@ -22,10 +22,10 @@ export const TIERS: Record<Tier, { name: string; color: string; ring: string; te
 
 export const TIER_ORDER: Tier[] = ['bronze', 'silver', 'gold', 'diamond', 'royal'];
 
-// هدايا قسم VIP بتفتح من الذهبي ١ (VIP 9)
+// هدايا قسم VIP بتفتح من الذهبي 1 (VIP 9)
 export const VIP_GIFTS_LEVEL = 9;
 
-// نقاط كل يوم بالسلسلة (يوم ١ لـ ٧)
+// نقاط كل يوم بالسلسلة (يوم 1 لـ 7)
 export const DAILY_POINTS = [10, 15, 20, 25, 30, 40, 50];
 
 // نفس جدول vip_levels بالسيرفر، عشان المستوى يبين بدون ما نستنى
@@ -70,7 +70,7 @@ export function canClaimDaily(d: DailyState) {
   return d.lastClaim !== gulfToday();
 }
 
-// يوم السلسلة الجاي (١ لـ ٧)
+// يوم السلسلة الجاي (1 لـ 7)
 export function nextStreakDay(d: DailyState) {
   if (d.lastClaim === gulfToday()) return d.streak;
   return d.lastClaim === dayBefore(gulfToday()) ? (d.streak % 7) + 1 : 1;

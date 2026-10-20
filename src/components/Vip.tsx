@@ -7,7 +7,7 @@ import { colors } from '@/theme';
 import { Avatar } from './Avatars';
 import { T } from './ui';
 
-// شارة "VIP ٦" بلون الفئة
+// شارة "VIP 6" بلون الفئة
 export function VipBadge({ level }: { level: number }) {
   const tier = tierOf(level);
   if (!tier) return null;

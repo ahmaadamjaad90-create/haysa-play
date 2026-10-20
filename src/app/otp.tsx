@@ -28,7 +28,7 @@ export default function Otp() {
   }, [left]);
 
   const confirm = async () => {
-    // TODO(Supabase): التحقق من الكود بالسيرفر. هلأ أي ٦ أرقام بتمشي.
+    // TODO(Supabase): التحقق من الكود بالسيرفر. هلأ أي 6 أرقام بتمشي.
     setBusy(true);
     setErr('');
     try {
@@ -61,7 +61,7 @@ export default function Otp() {
         </T>
       </View>
 
-      {/* خانات الكود: حقل واحد مخفي فوق ٦ مربعات */}
+      {/* خانات الكود: حقل واحد مخفي فوق 6 مربعات */}
       <Pressable accessibilityLabel="الكود" onPress={() => input.current?.focus()} style={styles.boxes}>
         {Array.from({ length: LEN }, (_, i) => {
           const active = i === code.length;
@@ -106,7 +106,7 @@ export default function Otp() {
           </T>
         )}
       </T>
-      <T style={styles.demo}>نسخة تجريبية: أي ٦ أرقام بتمشي لحد ما نربط الرسائل.</T>
+      <T style={styles.demo}>نسخة تجريبية: أي 6 أرقام بتمشي لحد ما نربط الرسائل.</T>
 
       {!!err && <T w="bold" style={styles.err}>{err}</T>}
 

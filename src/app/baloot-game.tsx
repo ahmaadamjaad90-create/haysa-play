@@ -113,7 +113,7 @@ function Waiting({ game, uid, apply }: { game: BalootGame; uid: string | null; a
           <T w="bold" style={{ fontSize: 13, color: colors.textSoft }}>{copied ? 'انتسخ ✓' : 'ابعته لأصحابك عشان يدخلوا من صفحة البلوت'}</T>
         </Pressable>
 
-        <T w="bold" style={styles.note}>المقعد ١ و٣ فريق، و٢ و٤ فريق</T>
+        <T w="bold" style={styles.note}>المقعد 1 و3 فريق، و2 و4 فريق</T>
         <View style={styles.slots}>
           {[0, 1, 2, 3].map((i) => {
             const p = game.players[i];
@@ -144,7 +144,7 @@ function Waiting({ game, uid, apply }: { game: BalootGame; uid: string | null; a
           {isHost ? (
             <>
               {n < 4 && <PillButton label="ضيف كمبيوتر 🤖" bg={colors.surface} fg={colors.white} disabled={busy} onPress={() => act(() => addBalootBot(game.id))} />}
-              <PillButton label={n < 4 ? `بنستنى (${ar(n)} من ٤)` : 'ابدأ اللعب'} disabled={busy || n < 4} onPress={() => act(() => startBaloot(game.id))} />
+              <PillButton label={n < 4 ? `بنستنى (${ar(n)} من 4)` : 'ابدأ اللعب'} disabled={busy || n < 4} onPress={() => act(() => startBaloot(game.id))} />
             </>
           ) : (
             <T style={styles.wait}>بنستنى صاحب الطاولة يبدأ...</T>

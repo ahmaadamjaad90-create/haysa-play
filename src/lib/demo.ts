@@ -13,7 +13,7 @@ export const demoRooms: DemoRoom[] = [
   {
     id: '1',
     name: 'سهرة لودو',
-    meta: 'لودو · ٤ على المايك',
+    meta: 'لودو · 4 على المايك',
     icon: 'heart',
     color: '#6A35C9',
     faces: [
@@ -25,7 +25,7 @@ export const demoRooms: DemoRoom[] = [
   {
     id: '2',
     name: 'مين الجاسوس؟',
-    meta: 'الجاسوس · ٨ لاعبين',
+    meta: 'الجاسوس · 8 لاعبين',
     icon: 'hat',
     color: '#D9381E',
     faces: [
@@ -37,7 +37,7 @@ export const demoRooms: DemoRoom[] = [
   {
     id: '3',
     name: 'سوالف الشلة',
-    meta: 'غرفة سوالف · ٦ على المايك',
+    meta: 'غرفة سوالف · 6 على المايك',
     icon: 'mic',
     color: '#B4297A',
     faces: [

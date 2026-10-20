@@ -346,9 +346,9 @@ function statusText(g: ColorsGame, uid: string | null) {
   const targetName = target?.uid === uid ? 'إنت' : (target?.name ?? '');
   const v = isWild(l.play) ? l.play : l.play.slice(1);
   const verb = mine ? 'نزّلت' : `${who} نزّل`;
-  if (v === 'w4') return `${verb} ألوان +٤ 😈 ${targetName} سحب ٤`;
+  if (v === 'w4') return `${verb} ألوان +4 😈 ${targetName} سحب 4`;
   if (v === 'w') return `${verb} ألوان، واللون صار ${CARD_COLORS[l.color].name}`;
-  if (v === 'd') return `${verb} +٢، ${targetName} سحب ورقتين`;
+  if (v === 'd') return `${verb} +2، ${targetName} سحب ورقتين`;
   if (v === 's') return `${verb} منع ⊘، ${targetName} راح دوره`;
   if (v === 'r') return `${verb} عكس ⇄`;
   if (l.uno) return `${verb} ورقة، وضل معه ورقة وحدة! 🔥`;

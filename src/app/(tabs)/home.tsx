@@ -29,13 +29,13 @@ import { colors } from '@/theme';
 
 // ألعاب النسخة الأولى
 const GAMES: { key: string; name: string; players: string; bg: string; fg: string; art: ReactNode; route: Href }[] = [
-  { key: 'ludo', name: 'لودو', players: '٢ إلى ٤', bg: colors.yellow, fg: colors.ink, art: <LudoArt />, route: '/ludo' },
-  { key: 'spy', name: 'الجاسوس', players: '٣ إلى ٨', bg: colors.coral, fg: colors.white, art: <SpyArt />, route: '/spy' },
+  { key: 'ludo', name: 'لودو', players: '2 إلى 4', bg: colors.yellow, fg: colors.ink, art: <LudoArt />, route: '/ludo' },
+  { key: 'spy', name: 'الجاسوس', players: '3 إلى 8', bg: colors.coral, fg: colors.white, art: <SpyArt />, route: '/spy' },
   { key: 'colors', name: 'ألوان', players: 'لعبة ورق', bg: colors.purple, fg: colors.white, art: <ColorsArt />, route: '/colors' },
   {
     key: 'trivia',
     name: 'تحدي الأسئلة',
-    players: 'لحد ٨',
+    players: 'لحد 8',
     bg: colors.pink,
     fg: colors.white,
     art: <T style={{ fontSize: 44, lineHeight: 52 }}>🧠</T>,
@@ -44,7 +44,7 @@ const GAMES: { key: string; name: string; players: string; bg: string; fg: strin
   {
     key: 'draw',
     name: 'احزر الرسمة',
-    players: '٢ إلى ٨',
+    players: '2 إلى 8',
     bg: '#1E8FB0',
     fg: colors.white,
     art: <T style={{ fontSize: 44, lineHeight: 52 }}>🎨</T>,
@@ -53,7 +53,7 @@ const GAMES: { key: string; name: string; players: string; bg: string; fg: strin
   {
     key: 'mafia',
     name: 'المافيا',
-    players: '٤ إلى ١٢',
+    players: '4 إلى 12',
     bg: '#3A1D72',
     fg: colors.white,
     art: <T style={{ fontSize: 44, lineHeight: 52 }}>🔪</T>,
@@ -62,7 +62,7 @@ const GAMES: { key: string; name: string; players: string; bg: string; fg: strin
   {
     key: 'codewords',
     name: 'كلمات السر',
-    players: '٤ إلى ١٠',
+    players: '4 إلى 10',
     bg: '#9E2412',
     fg: colors.white,
     art: <T style={{ fontSize: 44, lineHeight: 52 }}>🔑</T>,
@@ -71,7 +71,7 @@ const GAMES: { key: string; name: string; players: string; bg: string; fg: strin
   {
     key: 'domino',
     name: 'دومينو',
-    players: '٢ إلى ٤',
+    players: '2 إلى 4',
     bg: '#1F6B4A',
     fg: colors.white,
     art: <T style={{ fontSize: 44, lineHeight: 52 }}>🁫</T>,
@@ -89,7 +89,7 @@ const GAMES: { key: string; name: string; players: string; bg: string; fg: strin
   {
     key: 'kout',
     name: 'كوت بو ستة',
-    players: '٤ لاعبين',
+    players: '4 لاعبين',
     bg: '#1F6B4A',
     fg: colors.white,
     art: <T style={{ fontSize: 44, lineHeight: 52 }}>🃏</T>,
@@ -98,7 +98,7 @@ const GAMES: { key: string; name: string; players: string; bg: string; fg: strin
   {
     key: 'baloot',
     name: 'البلوت',
-    players: '٤ لاعبين',
+    players: '4 لاعبين',
     bg: '#8A4E2C',
     fg: colors.white,
     art: <T style={{ fontSize: 44, lineHeight: 52 }}>♠️</T>,

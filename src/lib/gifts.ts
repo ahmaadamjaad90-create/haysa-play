@@ -67,7 +67,7 @@ export async function sendGift(room: number, gift: string, qty: number, recipien
   return (data as { coins: number; gems: number }[])[0];
 }
 
-// آخر هدية كبيرة (الأسد وفوق) بآخر ٢٤ ساعة، لشريط الرئيسية
+// آخر هدية كبيرة (الأسد وفوق) بآخر 24 ساعة، لشريط الرئيسية
 export async function latestAnnouncement(): Promise<GiftEvent | null> {
   const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
   const { data, error } = await supabase

@@ -12,7 +12,7 @@ export const CHECKER = [
   { fill: '#B4297A', ring: '#6E1149', text: '#FFFFFF' },
 ];
 
-// العمود (٠..١٢) والصف (فوق/تحت) لكل بيت، والبار بالعمود ٦
+// العمود (0..12) والصف (فوق/تحت) لكل بيت، والبار بالعمود 6
 function slot(p: number): { col: number; top: boolean } {
   if (p >= 13 && p <= 18) return { col: p - 13, top: true };
   if (p >= 19) return { col: p - 19 + 7, top: true };
@@ -20,7 +20,7 @@ function slot(p: number): { col: number; top: boolean } {
   return { col: 6 - p + 7, top: false };
 }
 
-// لوح الطاولة. اللاعب ١ بيشوفه مقلوب عشان بيته يكون قدامه
+// لوح الطاولة. اللاعب 1 بيشوفه مقلوب عشان بيته يكون قدامه
 export function BgBoard({
   game,
   width,
@@ -57,7 +57,7 @@ export function BgBoard({
     const { col, top } = slot(i + 1);
     stack(col, top, Math.abs(v), v > 0 ? 0 : 1);
   });
-  // البار: اللاعب ٠ فوق، واللاعب ١ تحت
+  // البار: اللاعب 0 فوق، واللاعب 1 تحت
   if (game.bar[0]) stack(6, true, game.bar[0], 0);
   if (game.bar[1]) stack(6, false, game.bar[1], 1);
 

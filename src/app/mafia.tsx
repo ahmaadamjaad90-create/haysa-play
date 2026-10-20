@@ -63,7 +63,7 @@ export default function Mafia() {
             <T w="bold" style={{ fontSize: 14, lineHeight: 22, color: colors.textSoft }}>
               بالليل المافيا بتشتغل، وبالنهار بتصوّتوا مين تطلّعوا. مين بتصدّق؟
             </T>
-            <T w="bold" style={{ fontSize: 13, color: colors.yellow }}>من ٤ لـ ١٢ لاعب · الرابحين بياخدوا ٥٠ 🪙</T>
+            <T w="bold" style={{ fontSize: 13, color: colors.yellow }}>من 4 لـ 12 لاعب · الرابحين بياخدوا 50 🪙</T>
           </View>
           <T style={{ fontSize: 56 }}>🔪</T>
         </View>
@@ -85,14 +85,14 @@ export default function Mafia() {
             style={[styles.action, { backgroundColor: colors.pink }, busy === 'bot' && styles.dim]}>
             <T style={{ fontSize: 30 }}>🤖</T>
             <T w="black" style={{ fontSize: 16 }}>جرّب لحالك</T>
-            <T style={styles.actionNote}>مع ٦ من الكمبيوتر</T>
+            <T style={styles.actionNote}>مع 6 من الكمبيوتر</T>
           </Pressable>
         </View>
 
         <View style={styles.joinRow}>
           <TextInput
             value={code}
-            onChangeText={(t) => setCode(t.replace(/[^0-9٠-٩]/g, ''))}
+            onChangeText={(t) => setCode(t.replace(/[^0-90-9]/g, ''))}
             keyboardType="number-pad"
             placeholder="رقم الطاولة"
             placeholderTextColor={colors.placeholder}
@@ -126,7 +126,7 @@ export default function Mafia() {
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <T w="black" style={{ fontSize: 16 }} numberOfLines={1}>طاولة {host?.name ?? ''}</T>
                   <T style={{ fontSize: 13, color: colors.textMuted }}>
-                    رقم {ar(g.id)}{'\u200F · '}{ar(g.players.length)} من ١٢
+                    رقم {ar(g.id)}{'\u200F · '}{ar(g.players.length)} من 12
                   </T>
                 </View>
                 <Pressable

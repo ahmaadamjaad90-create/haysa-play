@@ -57,7 +57,7 @@ export const answerTrivia = (id: number, choice: number) => rpc<TriviaGame>('tri
 export const tickTrivia = (id: number) => rpc<TriviaGame>('trivia_tick', { gid: id });
 export const leaveTrivia = (id: number) => rpc<void>('trivia_leave', { gid: id });
 
-// لحالك ضد ٣ كمبيوتر
+// لحالك ضد 3 كمبيوتر
 export async function playTriviaVsBots(cat: TriviaCategory) {
   const id = await createTrivia(cat);
   for (let i = 0; i < 3; i++) await addTriviaBot(id);

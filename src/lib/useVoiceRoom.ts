@@ -41,7 +41,7 @@ function seatOf(p: Participant) {
   return s === undefined || s === '' ? null : Number(s);
 }
 
-// المقعد الأول (رقم ٠) محجوز لصاحب الغرفة
+// المقعد الأول (رقم 0) محجوز لصاحب الغرفة
 export function useVoiceRoom(number: number, seatsCount: number, ownerIdentity: string) {
   const roomRef = useRef<Room | null>(null);
   const [status, setStatus] = useState<Status>('connecting');

@@ -39,12 +39,12 @@ export type LudoGame = {
   updated_at: string;
 };
 
-// لون كل مقعد (المقعد ٠ فوق عاليسار، وبعدين مع عقارب الساعة)
+// لون كل مقعد (المقعد 0 فوق عاليسار، وبعدين مع عقارب الساعة)
 export const SEAT_COLORS = ['#E5533A', '#2FB760', '#FFC93C', '#4FC3F7'];
 export const SEAT_DARK = ['#9E2412', '#1C7A3F', '#B8860B', '#1E8FB0'];
 export const SEAT_NAMES = ['الأحمر', 'الأخضر', 'الأصفر', 'الأزرق'];
 
-// ===== شكل اللوح (١٥×١٥) =====
+// ===== شكل اللوح (15×15) =====
 
 type Cell = [number, number]; // [عمود، صف]
 
@@ -59,7 +59,7 @@ function line(from: Cell, to: Cell): Cell[] {
   return out;
 }
 
-// الطريق المشترك (٥٢ مربع) من بداية المقعد ٠
+// الطريق المشترك (52 مربع) من بداية المقعد 0
 export const TRACK: Cell[] = [
   ...line([1, 6], [5, 6]),
   ...line([6, 5], [6, 0]),
@@ -92,7 +92,7 @@ const BASE_SPOTS: Cell[] = [
   [4, 4],
 ];
 
-// الممر الملون لكل مقعد (خطوة ١..٥)
+// الممر الملون لكل مقعد (خطوة 1..5)
 function homeCell(seat: number, step: number): Cell {
   switch (seat) {
     case 0:

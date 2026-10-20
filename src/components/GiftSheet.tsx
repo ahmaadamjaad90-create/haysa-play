@@ -172,7 +172,7 @@ export function GiftSheet({
                 router.push('/vip');
               }}>
               <T w="bold" style={[styles.note, { color: colors.yellow }]}>
-                🔒 هدايا VIP بتفتح من الذهبي ١ (VIP {ar(VIP_GIFTS_LEVEL)}) · شوف مسار VIP
+                🔒 هدايا VIP بتفتح من الذهبي 1 (VIP {ar(VIP_GIFTS_LEVEL)}) · شوف مسار VIP
               </T>
             </Pressable>
           )}

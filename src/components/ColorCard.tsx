@@ -15,9 +15,9 @@ function label(card: string) {
     case 'r':
       return '⇄';
     case 'd':
-      return '+٢';
+      return '+2';
     case 'w4':
-      return '+٤';
+      return '+4';
     case 'w':
       return '';
     default:

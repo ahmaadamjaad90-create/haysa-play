@@ -131,7 +131,7 @@ function Waiting({ game, uid, apply }: { game: MafiaGame; uid: string | null; ap
             </View>
           ))}
         </View>
-        <T style={styles.count}>{ar(n)} من ١٢ · لازم ٤ على الأقل</T>
+        <T style={styles.count}>{ar(n)} من 12 · لازم 4 على الأقل</T>
 
         <View style={styles.howTo}>
           <T w="black" style={{ fontSize: 15 }}>الأدوار</T>
@@ -150,7 +150,7 @@ function Waiting({ game, uid, apply }: { game: MafiaGame; uid: string | null; ap
                 <PillButton label="ضيف كمبيوتر 🤖" bg={colors.surface} fg={colors.white} disabled={busy} onPress={() => act(() => addMafiaBot(game.id))} />
               )}
               <PillButton
-                label={n < 4 ? `بنستنى لاعبين (${ar(n)} من ٤)` : 'ابدأ اللعب'}
+                label={n < 4 ? `بنستنى لاعبين (${ar(n)} من 4)` : 'ابدأ اللعب'}
                 disabled={busy || n < 4}
                 onPress={() => act(() => startMafia(game.id))}
               />

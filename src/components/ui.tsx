@@ -1,5 +1,5 @@
 import { router, type Href } from 'expo-router';
-import type { ReactNode } from 'react';
+import { createElement, type ReactNode } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -12,15 +12,20 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { toLatinDigits } from '@/lib/format';
 import { colors, fonts } from '@/theme';
 import { BackIcon } from './Icons';
 
 type Weight = keyof typeof fonts;
 
+// الأرقام العربية (من السيرفر مثلاً: أسئلة، مزايا VIP) بتنعرض إنجليزية
+const latin = (c: ReactNode) => (typeof c === 'string' ? toLatinDigits(c) : c);
+
 // نص بخطوط هيصة. ما نستخدم fontWeight مع الخطوط المخصصة، كل وزن إله خط.
-// writingDirection: النص اللي بيبلش بحروف إنجليزية (متل "ID ١٠٢") بيضل عاليمين
-export function T({ w = 'regular', style, ...rest }: TextProps & { w?: Weight }) {
-  return <Text {...rest} style={[{ fontFamily: fonts[w], color: colors.white, writingDirection: 'rtl' }, style]} />;
+// writingDirection: النص اللي بيبلش بحروف إنجليزية (متل "ID 102") بيضل عاليمين
+export function T({ w = 'regular', style, children, ...rest }: TextProps & { w?: Weight }) {
+  const kids = Array.isArray(children) ? children.map(latin) : [latin(children)];
+  return createElement(Text, { ...rest, style: [{ fontFamily: fonts[w], color: colors.white, writingDirection: 'rtl' }, style] }, ...kids);
 }
 
 export function Screen({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {

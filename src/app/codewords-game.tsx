@@ -121,21 +121,21 @@ function Waiting({ game, uid, apply }: { game: CodeGame; uid: string | null; app
             </View>
           ))}
         </View>
-        <T style={styles.count}>{ar(n)} من ١٠ · لازم ٤ على الأقل</T>
+        <T style={styles.count}>{ar(n)} من 10 · لازم 4 على الأقل</T>
 
         <View style={styles.howTo}>
           <T w="black" style={{ fontSize: 15 }}>كيف بتنلعب؟</T>
-          <T style={styles.howLine}>١. بنتقسّم لفريقين، ولكل فريق رئيس بيشوف ألوان الكلمات.</T>
-          <T style={styles.howLine}>٢. الرئيس بيعطي كلمة وحدة ورقم، متل «بحر ٢» يعني في كلمتين إلهم علاقة بالبحر.</T>
-          <T style={styles.howLine}>٣. الفريق بيكشف الكلمات. إذا طلعت لون التاني أو محايدة، بيروح الدور.</T>
-          <T style={styles.howLine}>٤. القنبلة 💣 = خسارة فوراً. أول فريق بيكشف كلماته كلها بيربح.</T>
+          <T style={styles.howLine}>1. بنتقسّم لفريقين، ولكل فريق رئيس بيشوف ألوان الكلمات.</T>
+          <T style={styles.howLine}>2. الرئيس بيعطي كلمة وحدة ورقم، متل «بحر 2» يعني في كلمتين إلهم علاقة بالبحر.</T>
+          <T style={styles.howLine}>3. الفريق بيكشف الكلمات. إذا طلعت لون التاني أو محايدة، بيروح الدور.</T>
+          <T style={styles.howLine}>4. القنبلة 💣 = خسارة فوراً. أول فريق بيكشف كلماته كلها بيربح.</T>
         </View>
 
         {!!msg && <T w="bold" style={styles.msg}>{msg}</T>}
         <View style={{ marginTop: 14, marginHorizontal: 20 }}>
           {isHost ? (
             <PillButton
-              label={n < 4 ? `بنستنى لاعبين (${ar(n)} من ٤)` : 'ابدأ اللعب'}
+              label={n < 4 ? `بنستنى لاعبين (${ar(n)} من 4)` : 'ابدأ اللعب'}
               disabled={busy || n < 4}
               onPress={async () => {
                 setBusy(true);

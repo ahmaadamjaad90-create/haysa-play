@@ -64,7 +64,7 @@ export default function Spy() {
             <T w="bold" style={{ fontSize: 14, lineHeight: 22, color: '#FFE0D6' }}>
               الكل بيعرف المكان إلا واحد. اسألوا بعض وانتبهوا مين بيلفّ ويدور.
             </T>
-            <T w="bold" style={{ fontSize: 13, color: colors.yellow }}>من ٣ لـ ٨ لاعبين · الرابح بياخد ٥٠ 🪙</T>
+            <T w="bold" style={{ fontSize: 13, color: colors.yellow }}>من 3 لـ 8 لاعبين · الرابح بياخد 50 🪙</T>
           </View>
           <SpyArt size={72} />
         </View>
@@ -84,7 +84,7 @@ export default function Spy() {
         <View style={styles.joinRow}>
           <TextInput
             value={code}
-            onChangeText={(t) => setCode(t.replace(/[^0-9٠-٩]/g, ''))}
+            onChangeText={(t) => setCode(t.replace(/[^0-90-9]/g, ''))}
             keyboardType="number-pad"
             placeholder="رقم الطاولة"
             placeholderTextColor={colors.placeholder}
@@ -118,7 +118,7 @@ export default function Spy() {
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <T w="black" style={{ fontSize: 16 }} numberOfLines={1}>طاولة {host?.name ?? ''}</T>
                   <T style={{ fontSize: 13, color: colors.textMuted }}>
-                    رقم {ar(g.id)}{'\u200F · '}{ar(g.players.length)} من ٨
+                    رقم {ar(g.id)}{'\u200F · '}{ar(g.players.length)} من 8
                   </T>
                 </View>
                 <Pressable

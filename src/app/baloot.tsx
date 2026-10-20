@@ -61,8 +61,8 @@ export default function Baloot() {
         <View style={styles.hero}>
           <View style={{ flex: 1, gap: 4 }}>
             <T w="heading" style={{ fontSize: 28, lineHeight: 36 }}>صن ولا حكم؟</T>
-            <T w="bold" style={{ fontSize: 14, color: colors.textSoft }}>فريقين، وأول فريق بيوصل ١٥٢ بيربح</T>
-            <T w="bold" style={{ fontSize: 13, color: colors.yellow }}>٤ لاعبين · الفريق الرابح بياخد ١٠٠ 🪙</T>
+            <T w="bold" style={{ fontSize: 14, color: colors.textSoft }}>فريقين، وأول فريق بيوصل 152 بيربح</T>
+            <T w="bold" style={{ fontSize: 13, color: colors.yellow }}>4 لاعبين · الفريق الرابح بياخد 100 🪙</T>
           </View>
           <PlayingCard card="hJ" width={48} />
         </View>
@@ -91,7 +91,7 @@ export default function Baloot() {
         <View style={styles.joinRow}>
           <TextInput
             value={code}
-            onChangeText={(t) => setCode(t.replace(/[^0-9٠-٩]/g, ''))}
+            onChangeText={(t) => setCode(t.replace(/[^0-90-9]/g, ''))}
             keyboardType="number-pad"
             placeholder="رقم الطاولة"
             placeholderTextColor={colors.placeholder}
@@ -125,7 +125,7 @@ export default function Baloot() {
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <T w="black" style={{ fontSize: 16 }} numberOfLines={1}>طاولة {host?.name ?? ''}</T>
                   <T style={{ fontSize: 13, color: colors.textMuted }}>
-                    رقم {ar(g.id)}{'\u200F · '}{ar(g.players.length)} من ٤
+                    رقم {ar(g.id)}{'\u200F · '}{ar(g.players.length)} من 4
                   </T>
                 </View>
                 <Pressable

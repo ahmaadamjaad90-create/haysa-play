@@ -83,7 +83,7 @@ export default function CreateRoom() {
         <View style={[styles.block, styles.card]}>
           <View style={styles.rowBetween}>
             <T w="black" style={{ fontSize: 17 }}>عدد المقاعد على المايك</T>
-            <T style={{ fontSize: 14, color: colors.textMuted }}>من ٢ إلى ١٦</T>
+            <T style={{ fontSize: 14, color: colors.textMuted }}>من 2 إلى 16</T>
           </View>
           <View style={styles.stepper}>
             <Pressable

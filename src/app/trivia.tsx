@@ -61,8 +61,8 @@ export default function Trivia() {
         <View style={styles.hero}>
           <View style={{ flex: 1, gap: 4 }}>
             <T w="heading" style={{ fontSize: 28, lineHeight: 36 }}>مين أشطر واحد؟</T>
-            <T w="bold" style={{ fontSize: 14, color: colors.textSoft }}>١٠ أسئلة، وكل ما جاوبت أسرع أخدت نقاط أكتر</T>
-            <T w="bold" style={{ fontSize: 13, color: colors.yellow }}>لحد ٨ لاعبين · الأول بياخد ١٠٠ 🪙</T>
+            <T w="bold" style={{ fontSize: 14, color: colors.textSoft }}>10 أسئلة، وكل ما جاوبت أسرع أخدت نقاط أكتر</T>
+            <T w="bold" style={{ fontSize: 13, color: colors.yellow }}>لحد 8 لاعبين · الأول بياخد 100 🪙</T>
           </View>
           <T style={{ fontSize: 56 }}>🧠</T>
         </View>
@@ -97,14 +97,14 @@ export default function Trivia() {
             style={[styles.action, { backgroundColor: colors.pink }, busy === 'bot' && styles.dim]}>
             <T style={{ fontSize: 30 }}>🤖</T>
             <T w="black" style={{ fontSize: 16 }}>لحالي</T>
-            <T style={styles.actionNote}>ضد ٣ من الكمبيوتر</T>
+            <T style={styles.actionNote}>ضد 3 من الكمبيوتر</T>
           </Pressable>
         </View>
 
         <View style={styles.joinRow}>
           <TextInput
             value={code}
-            onChangeText={(t) => setCode(t.replace(/[^0-9٠-٩]/g, ''))}
+            onChangeText={(t) => setCode(t.replace(/[^0-90-9]/g, ''))}
             keyboardType="number-pad"
             placeholder="رقم الطاولة"
             placeholderTextColor={colors.placeholder}
@@ -138,7 +138,7 @@ export default function Trivia() {
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <T w="black" style={{ fontSize: 16 }} numberOfLines={1}>طاولة {host?.name ?? ''}</T>
                   <T style={{ fontSize: 13, color: colors.textMuted }}>
-                    رقم {ar(g.id)}{'\u200F · '}{ar(g.players.length)} من ٨
+                    رقم {ar(g.id)}{'\u200F · '}{ar(g.players.length)} من 8
                   </T>
                 </View>
                 <Pressable

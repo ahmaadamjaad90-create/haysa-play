@@ -87,7 +87,7 @@ export default function Store() {
                 <View key={i} style={[styles.dot, i < ads && { backgroundColor: colors.yellow }]} />
               ))}
             </View>
-            <T w="bold" style={{ fontSize: 11, color: colors.textDim }}>كل إعلان = ١٠ جواهر · لحد ١٠٠ باليوم</T>
+            <T w="bold" style={{ fontSize: 11, color: colors.textDim }}>كل إعلان = 10 جواهر · لحد 100 باليوم</T>
           </View>
           <Pressable
             accessibilityRole="button"
@@ -99,7 +99,7 @@ export default function Store() {
               )
             }
             style={[styles.adBtn, ads >= ADS_PER_DAY && { opacity: 0.5 }]}>
-            <T w="black" style={{ fontSize: 14, color: colors.ink }}>شاهد +١٠ 💎</T>
+            <T w="black" style={{ fontSize: 14, color: colors.ink }}>شاهد +10 💎</T>
           </Pressable>
         </View>
 
@@ -114,7 +114,7 @@ export default function Store() {
               <View key={p.key} style={[styles.card, best && styles.best]}>
                 {first && (
                   <View style={styles.badge}>
-                    <T w="black" style={{ fontSize: 11, color: colors.ink }}>أول شراء ×٢</T>
+                    <T w="black" style={{ fontSize: 11, color: colors.ink }}>أول شراء ×2</T>
                   </View>
                 )}
                 <View style={styles.art}>

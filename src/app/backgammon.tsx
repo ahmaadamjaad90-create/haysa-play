@@ -60,8 +60,8 @@ export default function Backgammon() {
         <View style={styles.hero}>
           <View style={{ flex: 1, gap: 4 }}>
             <T w="heading" style={{ fontSize: 28, lineHeight: 36 }}>ارمِ وحرّك!</T>
-            <T w="bold" style={{ fontSize: 14, color: colors.textSoft }}>أول واحد بيطلّع أحجاره الـ١٥ بيربح</T>
-            <T w="bold" style={{ fontSize: 13, color: colors.yellow }}>لاعبين · الرابح بياخد ١٠٠ 🪙</T>
+            <T w="bold" style={{ fontSize: 14, color: colors.textSoft }}>أول واحد بيطلّع أحجاره الـ15 بيربح</T>
+            <T w="bold" style={{ fontSize: 13, color: colors.yellow }}>لاعبين · الرابح بياخد 100 🪙</T>
           </View>
           <T style={{ fontSize: 56 }}>🎲</T>
         </View>
@@ -90,7 +90,7 @@ export default function Backgammon() {
         <View style={styles.joinRow}>
           <TextInput
             value={code}
-            onChangeText={(t) => setCode(t.replace(/[^0-9٠-٩]/g, ''))}
+            onChangeText={(t) => setCode(t.replace(/[^0-90-9]/g, ''))}
             keyboardType="number-pad"
             placeholder="رقم الطاولة"
             placeholderTextColor={colors.placeholder}
@@ -124,7 +124,7 @@ export default function Backgammon() {
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <T w="black" style={{ fontSize: 16 }} numberOfLines={1}>طاولة {host?.name ?? ''}</T>
                   <T style={{ fontSize: 13, color: colors.textMuted }}>
-                    رقم {ar(g.id)}{'\u200F · '}{ar(g.players.length)} من ٢
+                    رقم {ar(g.id)}{'\u200F · '}{ar(g.players.length)} من 2
                   </T>
                 </View>
                 <Pressable

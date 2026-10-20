@@ -66,7 +66,7 @@ export const mafiaVote = (id: number, target: string) => rpc<MafiaGame>('mafia_v
 export const tickMafia = (id: number) => rpc<MafiaGame>('mafia_tick', { gid: id });
 export const leaveMafia = (id: number) => rpc<void>('mafia_leave', { gid: id });
 
-// لحالك مع ٦ كمبيوتر
+// لحالك مع 6 كمبيوتر
 export async function playMafiaVsBots() {
   const id = await createMafia();
   for (let i = 0; i < 6; i++) await addMafiaBot(id);

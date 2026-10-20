@@ -114,7 +114,7 @@ function Waiting({ game, uid, apply }: { game: KoutGame; uid: string | null; app
           <T w="bold" style={{ fontSize: 13, color: colors.textSoft }}>{copied ? 'انتسخ ✓' : 'ابعته لأصحابك عشان يدخلوا من صفحة الكوت'}</T>
         </Pressable>
 
-        <T w="bold" style={styles.note}>المقعد ١ و٣ فريق، و٢ و٤ فريق</T>
+        <T w="bold" style={styles.note}>المقعد 1 و3 فريق، و2 و4 فريق</T>
         <View style={styles.slots}>
           {[0, 1, 2, 3].map((i) => {
             const p = game.players[i];
@@ -145,7 +145,7 @@ function Waiting({ game, uid, apply }: { game: KoutGame; uid: string | null; app
           {isHost ? (
             <>
               {n < 4 && <PillButton label="ضيف كمبيوتر 🤖" bg={colors.surface} fg={colors.white} disabled={busy} onPress={() => act(() => addKoutBot(game.id))} />}
-              <PillButton label={n < 4 ? `بنستنى (${ar(n)} من ٤)` : 'ابدأ اللعب'} disabled={busy || n < 4} onPress={() => act(() => startKout(game.id))} />
+              <PillButton label={n < 4 ? `بنستنى (${ar(n)} من 4)` : 'ابدأ اللعب'} disabled={busy || n < 4} onPress={() => act(() => startKout(game.id))} />
             </>
           ) : (
             <T style={styles.wait}>بنستنى صاحب الطاولة يبدأ...</T>

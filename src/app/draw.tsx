@@ -63,7 +63,7 @@ export default function Draw() {
             <T w="bold" style={{ fontSize: 14, lineHeight: 22, color: '#FFE0D6' }}>
               كل دور واحد بيرسم كلمة، والباقي بيخمّنوا. كل ما عرفت أسرع، أخدت نقاط أكتر.
             </T>
-            <T w="bold" style={{ fontSize: 13, color: colors.yellow }}>من ٢ لـ ٨ لاعبين · الأول بياخد ١٠٠ 🪙</T>
+            <T w="bold" style={{ fontSize: 13, color: colors.yellow }}>من 2 لـ 8 لاعبين · الأول بياخد 100 🪙</T>
           </View>
           <T style={{ fontSize: 56 }}>🎨</T>
         </View>
@@ -83,7 +83,7 @@ export default function Draw() {
         <View style={styles.joinRow}>
           <TextInput
             value={code}
-            onChangeText={(t) => setCode(t.replace(/[^0-9٠-٩]/g, ''))}
+            onChangeText={(t) => setCode(t.replace(/[^0-90-9]/g, ''))}
             keyboardType="number-pad"
             placeholder="رقم الطاولة"
             placeholderTextColor={colors.placeholder}
@@ -117,7 +117,7 @@ export default function Draw() {
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <T w="black" style={{ fontSize: 16 }} numberOfLines={1}>طاولة {host?.name ?? ''}</T>
                   <T style={{ fontSize: 13, color: colors.textMuted }}>
-                    رقم {ar(g.id)}{'\u200F · '}{ar(g.players.length)} من ٨
+                    رقم {ar(g.id)}{'\u200F · '}{ar(g.players.length)} من 8
                   </T>
                 </View>
                 <Pressable
