@@ -41,6 +41,15 @@ const GAMES: { key: string; name: string; players: string; bg: string; fg: strin
     art: <T style={{ fontSize: 44, lineHeight: 52 }}>🧠</T>,
     route: '/trivia',
   },
+  {
+    key: 'draw',
+    name: 'احزر الرسمة',
+    players: '٢ إلى ٨',
+    bg: '#1E8FB0',
+    fg: colors.white,
+    art: <T style={{ fontSize: 44, lineHeight: 52 }}>🎨</T>,
+    route: '/draw',
+  },
 ];
 
 const ROOM_ICONS: Record<DemoRoom['icon'], ReactNode> = {
