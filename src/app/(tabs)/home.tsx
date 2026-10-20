@@ -59,6 +59,15 @@ const GAMES: { key: string; name: string; players: string; bg: string; fg: strin
     art: <T style={{ fontSize: 44, lineHeight: 52 }}>🔪</T>,
     route: '/mafia',
   },
+  {
+    key: 'codewords',
+    name: 'كلمات السر',
+    players: '٤ إلى ١٠',
+    bg: '#9E2412',
+    fg: colors.white,
+    art: <T style={{ fontSize: 44, lineHeight: 52 }}>🔑</T>,
+    route: '/codewords',
+  },
 ];
 
 const ROOM_ICONS: Record<DemoRoom['icon'], ReactNode> = {
