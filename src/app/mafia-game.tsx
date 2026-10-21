@@ -28,6 +28,7 @@ import {
   type MafiaRole,
 } from '@/lib/mafia';
 import { useSession } from '@/lib/session';
+import { useResultSound } from '@/lib/sound';
 import { supabase } from '@/lib/supabase';
 import { colors } from '@/theme';
 
@@ -249,7 +250,7 @@ function Play({ room, game, uid }: { room: Room; game: MafiaGame; uid: string | 
       <Header
         title="المافيا"
         onBack={onBack}
-        talk={talkOn(game.players, uid, game.status === 'finished') ? talkWidth(false) : 0}
+        talk={talkWidth(talkOn(game.players, uid, game.status === 'finished'), false)}
         right={
           live ? (
             <View style={[styles.pill, game.phase === 'night' && { backgroundColor: '#0E0520' }]}>
@@ -482,6 +483,7 @@ function PersonCard({
 
 function Finished({ game, uid, onBalance }: { game: MafiaGame; uid: string | null; onBalance: (c: number, g: number) => void }) {
   const [reward, setReward] = useState<{ won: boolean; coins: number; xp: number } | null>(null);
+  useResultSound(reward ? reward.won : null);
   const [busy, setBusy] = useState(false);
   const vsBots = game.players.filter((p) => !p.bot).length === 1;
 

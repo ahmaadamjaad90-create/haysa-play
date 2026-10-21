@@ -25,6 +25,7 @@ import {
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
+import { playSfx, useResultSound, useTurnSound } from '@/lib/sound';
 import { supabase } from '@/lib/supabase';
 import { colors } from '@/theme';
 
@@ -179,6 +180,7 @@ function Play({ game, uid, apply }: { game: CodeGame; uid: string | null; apply:
   const myTeam = me?.team ?? null;
   const isBoss = !!me?.boss;
   const ourTurn = live && myTeam === game.turn;
+  useTurnSound(ourTurn);
   const canGuess = ourTurn && !isBoss && game.phase === 'guess';
   const canClue = ourTurn && isBoss && game.phase === 'clue';
 
@@ -247,7 +249,7 @@ function Play({ game, uid, apply }: { game: CodeGame; uid: string | null; apply:
       <Header
         title="كلمات السر"
         onBack={onBack}
-        talk={talkOn(game.players, uid, game.status === 'finished') ? talkWidth() : 0}
+        talk={talkWidth(talkOn(game.players, uid, game.status === 'finished'))}
         right={
           live ? (
             <View style={[styles.clock, secs <= 15 && { backgroundColor: colors.coral }]}>
@@ -347,7 +349,7 @@ function Play({ game, uid, apply }: { game: CodeGame; uid: string | null; apply:
                 key={i}
                 accessibilityRole="button"
                 disabled={!tappable}
-                onPress={() => act(() => pickCard(game.id, i))}
+                onPress={() => (playSfx('card'), act(() => pickCard(game.id, i)))}
                 style={[
                   styles.card,
                   style && { backgroundColor: style.bg },
@@ -392,6 +394,7 @@ function Play({ game, uid, apply }: { game: CodeGame; uid: string | null; apply:
 
 function Finished({ game, uid, onBalance }: { game: CodeGame; uid: string | null; onBalance: (c: number, g: number) => void }) {
   const [reward, setReward] = useState<{ won: boolean; coins: number; xp: number } | null>(null);
+  useResultSound(reward ? reward.won : null);
   const bomb = (game.revealed ?? []).includes('x');
 
   useEffect(() => {

@@ -4,12 +4,13 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View, type ScrollViewInst
 import { ChatIcon, CloseIcon, MicIcon, MicOffIcon, SendIcon } from '@/components/Icons';
 import { T } from '@/components/ui';
 import { ar } from '@/lib/format';
+import { setMusicDucked, useGameMusic, useSoundSettings } from '@/lib/sound';
 import { useGameVoice } from '@/lib/useGameVoice';
 import { colors } from '@/theme';
 
 type Player = { uid?: string | null; left?: boolean };
 
-// مايك ورسائل فوق شاشة اللعبة. بيشتغل بس إذا في لاعبين حقيقيين اتنين أو أكتر.
+// زر الصوت والموسيقى فوق شاشة اللعبة، ومايك ورسائل إذا في لاعبين حقيقيين اتنين أو أكتر.
 // الجاسوس والمافيا عندهم رسائل خاصة باللعبة، فهناك المايك بس (withChat=false).
 // اللاعبين الحقيقيين (مش كمبيوتر ومش طالعين)، والمايك بيشتغل إذا في اتنين ع الأقل وأنا منهم
 export function talkOn(players: Player[], uid: string | null, finished: boolean) {
@@ -17,8 +18,8 @@ export function talkOn(players: Player[], uid: string | null, finished: boolean)
   return !finished && humans.length >= 2 && humans.some((p) => p.uid === uid);
 }
 
-// عرض أزرار المايك والرسائل فوق، عشان الشاشات اللي عندها شي بآخر العنوان تترك محلّها
-export const talkWidth = (withChat = true) => (withChat ? 84 : 32);
+// عرض الأزرار فوق (الصوت دايماً، والمايك والرسائل إذا شغّالين)، عشان الشاشات اللي عندها شي بآخر العنوان تترك محلّها
+export const talkWidth = (on: boolean, withChat = true) => (1 + (on ? (withChat ? 2 : 1) : 0)) * 52 - 20;
 
 export function GameTalk({
   game,
@@ -42,6 +43,13 @@ export function GameTalk({
   const [seenId, setSeenId] = useState<string | null>(null);
   const [hiddenToast, setHiddenToast] = useState<string | null>(null);
   const scroll = useRef<ScrollViewInstance>(null);
+  const sound = useSoundSettings();
+  const soundOn = sound.music || sound.sfx;
+  useGameMusic(!finished);
+  useEffect(() => {
+    setMusicDucked(v.micOn);
+    return () => setMusicDucked(false);
+  }, [v.micOn]);
 
   const theirs = v.chat.filter((l) => !l.mine);
   const last = theirs.at(-1);
@@ -55,8 +63,6 @@ export function GameTalk({
     return () => clearTimeout(t);
   }, [last]);
 
-  if (!enabled) return null;
-
   const markSeen = () => setSeenId(v.chat.at(-1)?.id ?? null);
   const send = () => {
     v.sendChat(text).catch(() => {});
@@ -67,7 +73,14 @@ export function GameTalk({
     <>
       <View style={styles.bar} pointerEvents="box-none">
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          {withChat && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={soundOn ? 'سكّر الصوت' : 'شغّل الصوت'}
+            onPress={sound.toggle}
+            style={[styles.btn, !soundOn && { opacity: 0.6 }]}>
+            <T style={{ fontSize: 18 }}>{soundOn ? '🔊' : '🔇'}</T>
+          </Pressable>
+          {enabled && withChat && (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="الرسائل"
@@ -84,6 +97,7 @@ export function GameTalk({
               )}
             </Pressable>
           )}
+          {enabled && (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={v.micOn ? 'سكّر المايك' : 'افتح المايك'}
@@ -92,8 +106,9 @@ export function GameTalk({
             style={[styles.btn, v.micOn && { backgroundColor: colors.purple, borderWidth: 2, borderColor: colors.yellow }, !v.connected && { opacity: 0.5 }]}>
             {v.micOn ? <MicIcon size={20} /> : <MicOffIcon size={20} />}
           </Pressable>
+          )}
         </View>
-        {v.needsAudioTap && (
+        {enabled && v.needsAudioTap && (
           <Pressable accessibilityRole="button" onPress={v.startAudio} style={styles.pill}>
             <T w="black" style={{ fontSize: 11, color: colors.ink }}>🔈 اضغط لتسمع</T>
           </Pressable>
@@ -102,7 +117,7 @@ export function GameTalk({
         {v.speaking.length > 0 && (
           <T w="bold" style={styles.note} numberOfLines={1}>🔊 {v.speaking.join('، ')}</T>
         )}
-        {withChat && !open && last && last.id !== hiddenToast && (
+        {enabled && withChat && !open && last && last.id !== hiddenToast && (
           <View style={styles.toast}>
             <T w="black" style={{ fontSize: 11, color: colors.yellow }} numberOfLines={1}>{last.name}</T>
             <T style={{ fontSize: 12 }} numberOfLines={2}>{last.text}</T>
@@ -110,7 +125,7 @@ export function GameTalk({
         )}
       </View>
 
-      {open && (
+      {enabled && open && (
         <View style={styles.sheet}>
           <View style={styles.sheetHead}>
             <T w="heading" style={{ fontSize: 18, lineHeight: 26 }}>رسائل الطاولة</T>

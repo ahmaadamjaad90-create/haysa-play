@@ -29,6 +29,7 @@ import {
 } from '@/lib/colors';
 import { supabase } from '@/lib/supabase';
 import { useSession } from '@/lib/session';
+import { playSfx, useResultSound, useTurnSound } from '@/lib/sound';
 import { colors } from '@/theme';
 
 const back = () => (router.canGoBack() ? router.back() : router.replace('/colors'));
@@ -174,6 +175,7 @@ function Play({ game, hand, uid, apply }: { game: ColorsGame; hand: string[]; ui
   const { setBalance } = useSession();
   const me = game.players.find((p) => p.uid === uid && !p.left) ?? null;
   const myTurn = game.status === 'playing' && !!me && game.turn === me.seat;
+  useTurnSound(myTurn);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
   const [wild, setWild] = useState<string | null>(null);
@@ -210,6 +212,7 @@ function Play({ game, hand, uid, apply }: { game: ColorsGame; hand: string[]; ui
   const tap = (card: string) => {
     if (!myTurn || busy || !playable(card, game.top, game.color)) return;
     if (isWild(card)) return setWild(card);
+    playSfx('card');
     act(() => playCard(game.id, card));
   };
 
@@ -242,7 +245,7 @@ function Play({ game, hand, uid, apply }: { game: ColorsGame; hand: string[]; ui
           accessibilityRole="button"
           accessibilityLabel="اسحب ورقة"
           disabled={!myTurn || busy}
-          onPress={() => act(() => drawCard(game.id))}
+          onPress={() => (playSfx('card'), act(() => drawCard(game.id)))}
           style={[myTurn && !canPlayAny && styles.drawGlow]}>
           <CardBack width={70} />
           <T w="bold" style={{ marginTop: 6, fontSize: 12, color: colors.textMuted, textAlign: 'center' }}>اسحب</T>
@@ -306,7 +309,10 @@ function Play({ game, hand, uid, apply }: { game: ColorsGame; hand: string[]; ui
                   onPress={() => {
                     const card = wild;
                     setWild(null);
-                    if (card) act(() => playCard(game.id, card, k));
+                    if (card) {
+                      playSfx('card');
+                      act(() => playCard(game.id, card, k));
+                    }
                   }}
                   style={[styles.pickBtn, { backgroundColor: CARD_COLORS[k].bg }]}>
                   <T w="black" style={{ fontSize: 13, color: k === 'y' ? colors.ink : colors.white }}>{CARD_COLORS[k].name}</T>
@@ -360,6 +366,7 @@ function statusText(g: ColorsGame, uid: string | null) {
 function Finished({ game, uid, onBalance }: { game: ColorsGame; uid: string | null; onBalance: (c: number, g: number) => void }) {
   const winner = game.players.find((p) => p.seat === game.winner);
   const iWon = !!winner && winner.uid === uid;
+  useResultSound(iWon);
   const [reward, setReward] = useState<{ coins: number; xp: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const vsBot = game.players.some((p) => p.bot);

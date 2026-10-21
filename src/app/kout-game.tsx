@@ -29,6 +29,7 @@ import {
   type Suit,
 } from '@/lib/kout';
 import { useSession } from '@/lib/session';
+import { playSfx, useResultSound, useTurnSound } from '@/lib/sound';
 import { supabase } from '@/lib/supabase';
 import { colors } from '@/theme';
 
@@ -163,6 +164,7 @@ function Play({ game, hand, legal, uid, apply }: { game: KoutGame; hand: string[
   const me = game.players.find((p) => p.uid === uid && !p.left) ?? null;
   const mySeat = me?.seat ?? 0;
   const myTurn = game.status === 'playing' && !!me && game.turn === mySeat;
+  useTurnSound(myTurn);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
   const [confirmLeave, setConfirmLeave] = useState(false);
@@ -330,7 +332,7 @@ function Play({ game, hand, legal, uid, apply }: { game: KoutGame; hand: string[
               accessibilityRole="button"
               accessibilityLabel={`ورقة ${c}`}
               disabled={!ok || busy}
-              onPress={() => act(() => playKout(game.id, c))}
+              onPress={() => (playSfx('card'), act(() => playKout(game.id, c)))}
               style={i > 0 && { marginStart: -14 }}>
               <PlayingCard card={c} width={50} glow={ok} dim={myTurn && game.phase === 'play' && !ok} />
             </Pressable>
@@ -372,6 +374,7 @@ function Finished({ game, uid, mySeat, onBalance }: { game: KoutGame; uid: strin
   const [reward, setReward] = useState<{ won: boolean; coins: number; xp: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const iWon = game.winner === teamOf(mySeat);
+  useResultSound(iWon);
   const vsBots = game.players.filter((p) => !p.bot).length === 1;
 
   useEffect(() => {

@@ -27,6 +27,7 @@ import {
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
+import { playSfx, useResultSound, useTurnSound } from '@/lib/sound';
 import { supabase } from '@/lib/supabase';
 import { colors } from '@/theme';
 
@@ -170,6 +171,7 @@ function Play({ game, uid, apply }: { game: BgGame; uid: string | null; apply: A
   const me = game.players.find((p) => p.uid === uid && !p.left) ?? null;
   const mySeat = me?.seat ?? null;
   const myTurn = game.status === 'playing' && mySeat !== null && game.turn === mySeat;
+  useTurnSound(myTurn);
   const [selected, setSelected] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
@@ -214,6 +216,7 @@ function Play({ game, uid, apply }: { game: BgGame; uid: string | null; apply: A
     if (selected !== null && targets.has(p)) {
       const from = selected;
       setSelected(null);
+      playSfx('move');
       act(() => moveBg(game.id, from, p));
       return;
     }
@@ -284,7 +287,7 @@ function Play({ game, uid, apply }: { game: BgGame; uid: string | null; apply: A
         </View>
       </View>
       {myTurn && game.phase === 'roll' && (
-        <PillButton label="ارمِ الزهر 🎲" disabled={busy} onPress={() => act(() => rollBg(game.id))} style={{ marginHorizontal: 20, marginTop: 8 }} />
+        <PillButton label="ارمِ الزهر 🎲" disabled={busy} onPress={() => (playSfx('dice'), act(() => rollBg(game.id)))} style={{ marginHorizontal: 20, marginTop: 8 }} />
       )}
       {myTurn && game.phase === 'move' && targets.has(mySeat !== null ? offOf(mySeat) : -1) && (
         <PillButton label="طلّع الحجر برا ⬆️" disabled={busy} onPress={() => tap(offOf(mySeat ?? 0))} style={{ marginHorizontal: 20, marginTop: 8 }} />
@@ -331,6 +334,7 @@ function statusText(g: BgGame, uid: string | null) {
 function Finished({ game, uid, onBalance }: { game: BgGame; uid: string | null; onBalance: (c: number, g: number) => void }) {
   const winner = game.players.find((p) => p.seat === game.winner);
   const iWon = !!winner && winner.uid === uid;
+  useResultSound(iWon);
   const [reward, setReward] = useState<{ coins: number; xp: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const vsBot = game.players.some((p) => p.bot);

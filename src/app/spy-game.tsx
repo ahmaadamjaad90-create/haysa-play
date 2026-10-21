@@ -5,11 +5,12 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 
 import { Avatar } from '@/components/Avatars';
 import { BackIcon, CopyIcon, SendIcon } from '@/components/Icons';
-import { GameTalk } from '@/components/GameTalk';
+import { GameTalk, talkOn, talkWidth } from '@/components/GameTalk';
 import { PillButton, Screen, T } from '@/components/ui';
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
+import { useResultSound } from '@/lib/sound';
 import {
   callVote,
   guessLocation,
@@ -57,7 +58,7 @@ export default function SpyGameScreen() {
 
 type Apply = (g: SpyGame | void) => void;
 
-function Header({ title, onBack, right }: { title: string; onBack: () => void; right?: ReactNode }) {
+function Header({ title, onBack, right, talk }: { title: string; onBack: () => void; right?: ReactNode; talk?: number }) {
   return (
     <View style={styles.header}>
       <Pressable accessibilityRole="button" accessibilityLabel="رجوع" onPress={onBack} style={styles.back}>
@@ -65,6 +66,7 @@ function Header({ title, onBack, right }: { title: string; onBack: () => void; r
       </Pressable>
       <T w="heading" style={styles.h1}>{title}</T>
       {right}
+      {!!talk && <View style={{ width: talk }} />}
     </View>
   );
 }
@@ -268,6 +270,7 @@ function Play({
       <Header
         title="مين الجاسوس؟"
         onBack={onBack}
+        talk={talkWidth(talkOn(game.players, uid, game.status === 'finished'), false)}
         right={
           live ? (
             <View style={[styles.clock, secs <= 30 && { backgroundColor: colors.coral }]}>
@@ -453,6 +456,7 @@ function Finished({ game, uid, onBalance }: { game: SpyGame; uid: string | null;
   const spyName = game.players.find((p) => p.uid === r?.spy);
   const iAmSpy = r?.spy === uid;
   const iWon = (game.winner === 'spy') === iAmSpy;
+  useResultSound(iWon);
 
   useEffect(() => {
     if (!uid) return;

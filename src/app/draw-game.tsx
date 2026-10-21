@@ -22,6 +22,7 @@ import {
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
+import { useResultSound, useTurnSound } from '@/lib/sound';
 import { supabase } from '@/lib/supabase';
 import { colors } from '@/theme';
 
@@ -171,6 +172,7 @@ function Play({ room, game, uid }: { room: Room; game: DrawGame; uid: string | n
   const live = game.status === 'playing';
   const me = game.players.find((p) => p.uid === uid && !p.left) ?? null;
   const amDrawer = live && !!uid && game.drawer === uid;
+  useTurnSound(amDrawer && game.phase === 'choosing');
   const iGuessed = !!uid && game.guessed.some((g) => g.uid === uid);
   const drawerName = game.players.find((p) => p.uid === game.drawer)?.name ?? '';
 
@@ -235,7 +237,7 @@ function Play({ room, game, uid }: { room: Room; game: DrawGame; uid: string | n
       <Header
         title="احزر الرسمة"
         onBack={onBack}
-        talk={talkOn(game.players, uid, game.status === 'finished') ? talkWidth() : 0}
+        talk={talkWidth(talkOn(game.players, uid, game.status === 'finished'))}
         right={
           live ? (
             <View style={[styles.clock, secs <= 10 && game.phase === 'drawing' && { backgroundColor: colors.coral }]}>
@@ -389,6 +391,7 @@ function Play({ room, game, uid }: { room: Room; game: DrawGame; uid: string | n
 
 function Finished({ game, uid, onBalance }: { game: DrawGame; uid: string | null; onBalance: (c: number, g: number) => void }) {
   const [reward, setReward] = useState<{ won: boolean; coins: number; xp: number } | null>(null);
+  useResultSound(reward ? reward.won : null);
   const winner = game.players.find((p) => p.uid === game.winner);
 
   useEffect(() => {

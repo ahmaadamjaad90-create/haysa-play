@@ -29,6 +29,7 @@ import {
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
+import { playSfx, useResultSound, useTurnSound } from '@/lib/sound';
 import { supabase } from '@/lib/supabase';
 import { colors } from '@/theme';
 
@@ -174,6 +175,7 @@ function Play({ game, hand, uid, apply }: { game: DomGame; hand: string[]; uid: 
   const { setBalance } = useSession();
   const me = game.players.find((p) => p.uid === uid && !p.left) ?? null;
   const myTurn = game.status === 'playing' && !!me && game.turn === me.seat;
+  useTurnSound(myTurn);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
   const [pending, setPending] = useState<string | null>(null);
@@ -212,7 +214,7 @@ function Play({ game, hand, uid, apply }: { game: DomGame; hand: string[]; uid: 
     if (!myTurn || busy) return;
     const sides = sidesFor(game, t);
     if (!sides.length) return;
-    if (sides.length === 1 || leftEnd(game) === rightEnd(game)) return act(() => playTile(game.id, t, sides[0]));
+    if (sides.length === 1 || leftEnd(game) === rightEnd(game)) return (playSfx('card'), act(() => playTile(game.id, t, sides[0])));
     setPending(pending === t ? null : t);
   };
 
@@ -287,16 +289,16 @@ function Play({ game, hand, uid, apply }: { game: DomGame; hand: string[]; uid: 
         <PillButton
           label={game.pile > 0 ? 'اسحب من الكومة 🁫' : 'مرّر الدور'}
           disabled={busy}
-          onPress={() => act(() => drawTile(game.id))}
+          onPress={() => (playSfx('card'), act(() => drawTile(game.id)))}
           style={{ marginHorizontal: 20, marginTop: 6 }}
         />
       )}
       {pending && (
         <View style={[styles.sideRow, { direction: 'ltr' }]}>
-          <Pressable accessibilityRole="button" onPress={() => act(() => playTile(game.id, pending, 'L'))} style={styles.sideBtn}>
+          <Pressable accessibilityRole="button" onPress={() => (playSfx('card'), act(() => playTile(game.id, pending, 'L')))} style={styles.sideBtn}>
             <T w="black" style={{ fontSize: 15, color: colors.ink }}>◀ عاليسار</T>
           </Pressable>
-          <Pressable accessibilityRole="button" onPress={() => act(() => playTile(game.id, pending, 'R'))} style={styles.sideBtn}>
+          <Pressable accessibilityRole="button" onPress={() => (playSfx('card'), act(() => playTile(game.id, pending, 'R')))} style={styles.sideBtn}>
             <T w="black" style={{ fontSize: 15, color: colors.ink }}>عاليمين ▶</T>
           </Pressable>
         </View>
@@ -359,6 +361,7 @@ function statusText(g: DomGame, uid: string | null) {
 function Finished({ game, uid, onBalance }: { game: DomGame; uid: string | null; onBalance: (c: number, g: number) => void }) {
   const winner = game.players.find((p) => p.seat === game.winner);
   const iWon = !!winner && winner.uid === uid;
+  useResultSound(iWon);
   const [reward, setReward] = useState<{ coins: number; xp: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const vsBot = game.players.some((p) => p.bot);

@@ -27,6 +27,7 @@ import {
 } from '@/lib/ludo';
 import { supabase } from '@/lib/supabase';
 import { useSession } from '@/lib/session';
+import { playSfx, useResultSound, useTurnSound } from '@/lib/sound';
 import { colors } from '@/theme';
 
 export default function LudoGameScreen() {
@@ -182,6 +183,7 @@ function Play({ game, uid, apply }: { game: LudoGame; uid: string | null; apply:
   const me = game.players.find((p) => p.uid === uid && !p.left) ?? null;
   const mySeat = me?.seat ?? null;
   const myTurn = game.status === 'playing' && mySeat !== null && game.turn === mySeat;
+  useTurnSound(myTurn);
   const movable = myTurn ? legalTokens(game) : [];
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
@@ -253,7 +255,7 @@ function Play({ game, uid, apply }: { game: LudoGame; uid: string | null; apply:
           size={size}
           mySeat={mySeat}
           movable={movable}
-          onMove={(t) => !busy && act(() => moveToken(game.id, t))}
+          onMove={(t) => !busy && (playSfx('move'), act(() => moveToken(game.id, t)))}
         />
       </View>
 
@@ -265,7 +267,7 @@ function Play({ game, uid, apply }: { game: LudoGame; uid: string | null; apply:
           accessibilityRole="button"
           accessibilityLabel="ارمِ الزهر"
           disabled={!myTurn || game.phase !== 'roll' || busy}
-          onPress={() => act(() => rollDice(game.id))}
+          onPress={() => (playSfx('dice'), act(() => rollDice(game.id)))}
           style={[
             styles.diceBtn,
             { borderColor: turnPlayer ? SEAT_COLORS[turnPlayer.seat] : colors.surface },
@@ -336,6 +338,7 @@ function statusText(g: LudoGame, uid: string | null) {
 function Finished({ game, uid, onBalance }: { game: LudoGame; uid: string | null; onBalance: (c: number, g: number) => void }) {
   const winner = game.players.find((p) => p.seat === game.winner);
   const iWon = !!winner && winner.uid === uid;
+  useResultSound(iWon);
   const [reward, setReward] = useState<{ coins: number; xp: number } | null>(null);
   const [busy, setBusy] = useState(false);
 

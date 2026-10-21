@@ -10,6 +10,7 @@ import { PillButton, Screen, T } from '@/components/ui';
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
+import { playSfx, useResultSound, useTurnSound } from '@/lib/sound';
 import { supabase } from '@/lib/supabase';
 import {
   CATEGORIES,
@@ -214,6 +215,14 @@ function Play({ game, uid, apply }: { game: TriviaGame; uid: string | null; appl
   const myKey = uid ?? '';
   const myChoice = mine?.round === game.round ? mine.choice : reveal?.picks[myKey];
   const answered = !!uid && game.answered.includes(uid);
+  // سؤال جديد، وبعده صح أو غلط على جوابي
+  const revealKey = reveal ? `${game.round}:${myChoice === reveal.answer}` : null;
+  useTurnSound(live && game.phase === 'question' && !!me);
+  useEffect(() => {
+    if (revealKey && me && myChoice !== undefined) playSfx(revealKey.endsWith('true') ? 'correct' : 'wrong');
+    // صوت مرة وحدة لكل كشف
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealKey]);
   const msLeft = game.deadline ? Math.max(0, Date.parse(game.deadline) - now) : 0;
   const progress = game.phase === 'question' ? Math.min(1, msLeft / 15000) : 0;
   const cat = CATEGORIES.find((c) => c.key === q?.category);
@@ -227,7 +236,7 @@ function Play({ game, uid, apply }: { game: TriviaGame; uid: string | null; appl
       <Header
         title="تحدي الأسئلة"
         onBack={onBack}
-        talk={talkOn(game.players, uid, game.status === 'finished') ? talkWidth() : 0}
+        talk={talkWidth(talkOn(game.players, uid, game.status === 'finished'))}
         right={
           live ? (
             <View style={styles.roundPill}>
@@ -318,6 +327,7 @@ function Play({ game, uid, apply }: { game: TriviaGame; uid: string | null; appl
 
 function Finished({ game, uid, onBalance }: { game: TriviaGame; uid: string | null; onBalance: (c: number, g: number) => void }) {
   const [reward, setReward] = useState<{ won: boolean; coins: number; xp: number } | null>(null);
+  useResultSound(reward ? reward.won : null);
   const [busy, setBusy] = useState(false);
   const winner = game.players.find((p) => p.uid && p.uid === game.winner);
   const iWon = !!reward?.won;
