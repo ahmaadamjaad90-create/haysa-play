@@ -14,6 +14,8 @@ import { Platform, View } from 'react-native';
 // على الجوال: بيجهّز WebRTC لـ LiveKit قبل أي غرفة صوت
 import '@/lib/livekitPlatform';
 import { SessionProvider } from '@/lib/session';
+// بيسجّل فتح الصوت من أول لمسة بالتطبيق (سفاري ما بيشغّل صوت بدونها)
+import '@/lib/sound';
 import { colors } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();

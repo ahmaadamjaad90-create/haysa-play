@@ -1,20 +1,21 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAudioPlayer, type AudioPlayer } from 'expo-audio';
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 
 // موسيقى الألعاب والمؤثرات (ألّفناها بـ assets/sounds/compose.py و sfx.py)
 const SFX = {
-  tap: require('../../assets/sounds/tap.m4a'),
-  card: require('../../assets/sounds/card.m4a'),
-  dice: require('../../assets/sounds/dice.m4a'),
-  move: require('../../assets/sounds/move.m4a'),
-  turn: require('../../assets/sounds/turn.m4a'),
-  correct: require('../../assets/sounds/correct.m4a'),
-  wrong: require('../../assets/sounds/wrong.m4a'),
-  tick: require('../../assets/sounds/tick.m4a'),
-  win: require('../../assets/sounds/win.m4a'),
-  lose: require('../../assets/sounds/lose.m4a'),
-  coins: require('../../assets/sounds/coins.m4a'),
+  tap: require('../../assets/sounds/tap.mp3'),
+  card: require('../../assets/sounds/card.mp3'),
+  dice: require('../../assets/sounds/dice.mp3'),
+  move: require('../../assets/sounds/move.mp3'),
+  turn: require('../../assets/sounds/turn.mp3'),
+  correct: require('../../assets/sounds/correct.mp3'),
+  wrong: require('../../assets/sounds/wrong.mp3'),
+  tick: require('../../assets/sounds/tick.mp3'),
+  win: require('../../assets/sounds/win.mp3'),
+  lose: require('../../assets/sounds/lose.mp3'),
+  coins: require('../../assets/sounds/coins.mp3'),
 };
 export type Sfx = keyof typeof SFX;
 
@@ -53,20 +54,55 @@ let music: AudioPlayer | null = null;
 let musicWanted = 0;
 let ducked = false;
 
+function makeMusic() {
+  const m = createAudioPlayer(require('../../assets/sounds/music.mp3'));
+  m.loop = true;
+  return m;
+}
+
 function applyMusic() {
   const on = settings.music && musicWanted > 0;
   try {
     if (on) {
-      if (!music) {
-        music = createAudioPlayer(require('../../assets/sounds/music.m4a'));
-        music.loop = true;
-      }
+      music ??= makeMusic();
       music.volume = ducked ? MUSIC_DUCKED : MUSIC_VOLUME;
       music.play();
     } else {
       music?.pause();
     }
   } catch {}
+}
+
+// المتصفح (خصوصاً سفاري على الآيفون) ما بيشغّل صوت إلا من جوّا لمسة.
+// فأول لمسة منفتح فيها كل الأصوات بصمت، وأي لمسة بعدها بترجّع الموسيقى إذا انمنعت.
+let primed = false;
+function unlock() {
+  if (!primed) {
+    primed = true;
+    for (const name of Object.keys(SFX) as Sfx[]) {
+      try {
+        const p = (players[name] ??= createAudioPlayer(SFX[name]));
+        p.muted = true;
+        p.play();
+        p.pause();
+        p.muted = false;
+      } catch {}
+    }
+    // نفس الشي للموسيقى، عشان تقدر تشتغل لحالها لما تفوت على لعبة
+    try {
+      music ??= makeMusic();
+      if (!musicWanted) {
+        music.muted = true;
+        music.play();
+        music.pause();
+        music.muted = false;
+      }
+    } catch {}
+  }
+  if (settings.music && musicWanted > 0 && !music?.playing) applyMusic();
+}
+if (Platform.OS === 'web' && typeof document !== 'undefined') {
+  for (const ev of ['touchend', 'pointerup', 'keydown']) document.addEventListener(ev, unlock, { capture: true });
 }
 
 // الموسيقى بتشتغل طول ما في شاشة لعبة مفتوحة
