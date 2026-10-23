@@ -33,7 +33,8 @@ const fmt = (n: number) => ar(n.toLocaleString('en'));
 const INKS = ['#1C0A3A', '#D9381E', '#FFC93C', '#2FB760', '#1E8FB0', '#6A35C9', '#8A4E2C', '#FFFFFF'];
 
 export default function DrawGameScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // room: الطاولة مفتوحة من غرفة صوتية (الصوت من الغرفة نفسها)
+  const { id, room: inRoom } = useLocalSearchParams<{ id: string; room?: string }>();
   const { user, uid, loading } = useSession();
   const room = useDrawGame(Number(id), { uid, name: user?.name ?? '' });
 
@@ -51,7 +52,7 @@ export default function DrawGameScreen() {
       ) : (
         <Play room={room} game={game} uid={uid} />
       )}
-      {game && <GameTalk game="draw" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} />}
+      {game && <GameTalk game="draw" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} inRoom={!!inRoom} />}
     </Screen>
   );
 }

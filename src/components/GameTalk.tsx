@@ -28,6 +28,7 @@ export function GameTalk({
   uid,
   finished,
   withChat = true,
+  inRoom = false,
 }: {
   game: string;
   id: number;
@@ -35,8 +36,10 @@ export function GameTalk({
   uid: string | null;
   finished: boolean;
   withChat?: boolean;
+  // من غرفة صوتية: الصوت والرسائل من الغرفة، فما منفتح صوت تاني ولا موسيقى
+  inRoom?: boolean;
 }) {
-  const enabled = talkOn(players, uid, finished);
+  const enabled = !inRoom && talkOn(players, uid, finished);
   const v = useGameVoice(game, id, enabled);
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
@@ -45,7 +48,7 @@ export function GameTalk({
   const scroll = useRef<ScrollViewInstance>(null);
   const sound = useSoundSettings();
   const soundOn = sound.music || sound.sfx;
-  useGameMusic(!finished);
+  useGameMusic(!finished && !inRoom);
   useEffect(() => {
     setMusicDucked(v.micOn);
     return () => setMusicDucked(false);

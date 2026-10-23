@@ -59,6 +59,41 @@ Deno.serve(async (req) => {
       );
     }
 
+    // المشرف أو صاحب الغرفة: كتم، تنزيل عن المقعد، أو طرد (ما بيرجع 10 دقايق)
+    if (body.action === 'mod') {
+      const number = Number(body.room);
+      const target = String(body.identity ?? '');
+      const { data: room } = await admin.from('rooms').select('owner').eq('number', number).maybeSingle();
+      if (!room) return json({ error: 'room not found' }, 404);
+      const { data: isMod } = await admin.rpc('is_room_mod', { num: number, uid: auth.user.id });
+      if (!isMod) return json({ error: 'not a room admin' }, 403);
+      const { data: who } = await admin.from('profiles').select('id').eq('public_id', Number(target)).maybeSingle();
+      if (!who) return json({ error: 'player not found' }, 404);
+      // ما حدا بيقدر يطرد صاحب الغرفة، والمشرف ما بيقدر على مشرف تاني
+      if (who.id === room.owner) return json({ error: 'cannot act on owner' }, 403);
+      if (room.owner !== auth.user.id) {
+        const { data: targetMod } = await admin.rpc('is_room_mod', { num: number, uid: who.id });
+        if (targetMod) return json({ error: 'cannot act on admin' }, 403);
+      }
+      const svc = new RoomServiceClient(LIVEKIT_URL.replace('wss://', 'https://'), API_KEY, API_SECRET);
+      const name = String(number);
+      const muteAll = async () => {
+        const p = await svc.getParticipant(name, target);
+        for (const t of p.tracks) if (!t.muted) await svc.mutePublishedTrack(name, target, t.sid, true);
+      };
+      if (body.op === 'mute') await muteAll();
+      else if (body.op === 'unseat') {
+        await muteAll().catch(() => {});
+        await svc.updateParticipant(name, target, { attributes: { seat: '' } });
+      } else if (body.op === 'kick') {
+        await admin
+          .from('room_bans')
+          .upsert({ room_owner: room.owner, user_id: who.id, until: new Date(Date.now() + 10 * 60 * 1000).toISOString() });
+        await svc.removeParticipant(name, target);
+      } else return json({ error: 'bad op' }, 400);
+      return json({ ok: true });
+    }
+
     // تذكرة دخول لغرفة، أو لطاولة لعبة (بس للاعبين اللي عليها)
     let roomName: string;
     let isOwner = false;
@@ -75,6 +110,14 @@ Deno.serve(async (req) => {
       if (!room) return json({ error: 'room not found' }, 404);
       roomName = String(number);
       isOwner = room.owner === auth.user.id;
+      const { data: ban } = await admin
+        .from('room_bans')
+        .select('until')
+        .eq('room_owner', room.owner)
+        .eq('user_id', auth.user.id)
+        .gt('until', new Date().toISOString())
+        .maybeSingle();
+      if (ban) return json({ error: 'banned', until: ban.until }, 403);
     }
 
     const { data: me } = await admin

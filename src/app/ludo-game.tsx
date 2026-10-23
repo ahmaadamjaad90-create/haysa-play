@@ -31,7 +31,8 @@ import { playSfx, useResultSound, useTurnSound } from '@/lib/sound';
 import { colors } from '@/theme';
 
 export default function LudoGameScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // room: الطاولة مفتوحة من غرفة صوتية (الصوت من الغرفة نفسها)
+  const { id, room: inRoom } = useLocalSearchParams<{ id: string; room?: string }>();
   const gid = Number(id);
   const { user, uid, loading } = useSession();
   const { game, error, apply } = useLudoGame(gid);
@@ -49,7 +50,7 @@ export default function LudoGameScreen() {
       ) : (
         <Play game={game} uid={uid} apply={apply} />
       )}
-      {game && <GameTalk game="ludo" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} />}
+      {game && <GameTalk game="ludo" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} inRoom={!!inRoom} />}
     </Screen>
   );
 }

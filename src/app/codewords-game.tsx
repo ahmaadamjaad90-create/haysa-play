@@ -40,7 +40,8 @@ const CARD: Record<CardColor, { bg: string; fg: string }> = {
 };
 
 export default function CodeWordsGameScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // room: الطاولة مفتوحة من غرفة صوتية (الصوت من الغرفة نفسها)
+  const { id, room: inRoom } = useLocalSearchParams<{ id: string; room?: string }>();
   const { user, uid, loading } = useSession();
   const { game, error, apply } = useCodeGame(Number(id));
 
@@ -57,7 +58,7 @@ export default function CodeWordsGameScreen() {
       ) : (
         <Play game={game} uid={uid} apply={apply} />
       )}
-      {game && <GameTalk game="codewords" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} />}
+      {game && <GameTalk game="codewords" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} inRoom={!!inRoom} />}
     </Screen>
   );
 }

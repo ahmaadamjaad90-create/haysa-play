@@ -35,7 +35,8 @@ import { colors } from '@/theme';
 const back = () => (router.canGoBack() ? router.back() : router.replace('/baloot'));
 
 export default function BalootGameScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // room: الطاولة مفتوحة من غرفة صوتية (الصوت من الغرفة نفسها)
+  const { id, room: inRoom } = useLocalSearchParams<{ id: string; room?: string }>();
   const { user, uid, loading } = useSession();
   const { game, hand, legal, error, apply } = useBalootGame(Number(id), uid);
 
@@ -52,7 +53,7 @@ export default function BalootGameScreen() {
       ) : (
         <Play game={game} hand={hand} legal={legal} uid={uid} apply={apply} />
       )}
-      {game && <GameTalk game="baloot" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} />}
+      {game && <GameTalk game="baloot" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} inRoom={!!inRoom} />}
     </Screen>
   );
 }

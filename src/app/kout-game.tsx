@@ -36,7 +36,8 @@ import { colors } from '@/theme';
 const back = () => (router.canGoBack() ? router.back() : router.replace('/kout'));
 
 export default function KoutGameScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // room: الطاولة مفتوحة من غرفة صوتية (الصوت من الغرفة نفسها)
+  const { id, room: inRoom } = useLocalSearchParams<{ id: string; room?: string }>();
   const { user, uid, loading } = useSession();
   const { game, hand, legal, error, apply } = useKoutGame(Number(id), uid);
 
@@ -53,7 +54,7 @@ export default function KoutGameScreen() {
       ) : (
         <Play game={game} hand={hand} legal={legal} uid={uid} apply={apply} />
       )}
-      {game && <GameTalk game="kout" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} />}
+      {game && <GameTalk game="kout" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} inRoom={!!inRoom} />}
     </Screen>
   );
 }

@@ -33,7 +33,8 @@ import { colors } from '@/theme';
 const back = () => (router.canGoBack() ? router.back() : router.replace('/spy'));
 
 export default function SpyGameScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // room: الطاولة مفتوحة من غرفة صوتية (الصوت من الغرفة نفسها)
+  const { id, room: inRoom } = useLocalSearchParams<{ id: string; room?: string }>();
   const gid = Number(id);
   const { user, uid, loading } = useSession();
   const { game, error, apply, chat, send } = useSpyGame(gid, { uid, name: user?.name ?? '' });
@@ -51,7 +52,7 @@ export default function SpyGameScreen() {
       ) : (
         <Play game={game} uid={uid} apply={apply} chat={chat} send={send} />
       )}
-      {game && <GameTalk game="spy" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} withChat={false} />}
+      {game && <GameTalk game="spy" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} inRoom={!!inRoom} withChat={false} />}
     </Screen>
   );
 }

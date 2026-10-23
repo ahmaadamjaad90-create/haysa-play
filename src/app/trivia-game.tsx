@@ -32,7 +32,8 @@ const fmt = (n: number) => ar(n.toLocaleString('en'));
 const OPTION_COLORS = [colors.coral, colors.purple, '#2FB760', '#1E8FB0'];
 
 export default function TriviaGameScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // room: الطاولة مفتوحة من غرفة صوتية (الصوت من الغرفة نفسها)
+  const { id, room: inRoom } = useLocalSearchParams<{ id: string; room?: string }>();
   const { user, uid, loading } = useSession();
   const { game, error, apply } = useTriviaGame(Number(id));
 
@@ -49,7 +50,7 @@ export default function TriviaGameScreen() {
       ) : (
         <Play game={game} uid={uid} apply={apply} />
       )}
-      {game && <GameTalk game="trivia" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} />}
+      {game && <GameTalk game="trivia" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} inRoom={!!inRoom} />}
     </Screen>
   );
 }

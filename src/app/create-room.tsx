@@ -3,11 +3,22 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { Dalla } from '@/components/Dalla';
-import { MicIcon, MinusIcon, PlusIcon } from '@/components/Icons';
+import { Avatar } from '@/components/Avatars';
+import { CloseIcon, MicIcon, MinusIcon, PlusIcon } from '@/components/Icons';
 import { BackButton, PillButton, Screen, T } from '@/components/ui';
 import { errorText } from '@/lib/errors';
-import { ar } from '@/lib/format';
-import { CATEGORIES, SEAT_PRESETS, getMyRoom, saveMyRoom } from '@/lib/rooms';
+import { ar, toLatinDigits } from '@/lib/format';
+import {
+  CATEGORIES,
+  SEAT_PRESETS,
+  addAdmin,
+  deleteMyRoom,
+  getMyRoom,
+  listAdmins,
+  removeAdmin,
+  saveMyRoom,
+  type RoomAdmin,
+} from '@/lib/rooms';
 import { useSession } from '@/lib/session';
 import { colors, fonts } from '@/theme';
 
@@ -20,6 +31,10 @@ export default function CreateRoom() {
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [admins, setAdmins] = useState<RoomAdmin[]>([]);
+  const [adminId, setAdminId] = useState('');
+  const [adminMsg, setAdminMsg] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     if (!uid) return;
@@ -30,6 +45,7 @@ export default function CreateRoom() {
         setName(r.name);
         setSeats(r.seats);
         setCategory(r.category);
+        listAdmins(uid).then(setAdmins).catch(() => {});
       })
       .catch((e) => setErr(errorText(e)));
   }, [uid]);
@@ -43,6 +59,44 @@ export default function CreateRoom() {
     try {
       await saveMyRoom(exists, uid, { name: name.trim(), seats, category });
       router.replace({ pathname: '/room', params: { id: String(user.id) } });
+    } catch (e) {
+      setErr(errorText(e));
+      setBusy(false);
+    }
+  };
+
+  const add = async () => {
+    if (!uid) return;
+    setAdminMsg('');
+    try {
+      await addAdmin(Number(toLatinDigits(adminId)));
+      setAdminId('');
+      setAdmins(await listAdmins(uid));
+    } catch (e) {
+      const t = errorText(e);
+      setAdminMsg(
+        t.includes('not found') ? 'ما في لاعب بهالرقم'
+        : t.includes('own the room') ? 'إنت صاحب الغرفة'
+        : t.includes('too many') ? 'وصلت للحد: 10 مشرفين'
+        : t,
+      );
+    }
+  };
+
+  const remove = async (pid: number) => {
+    if (!uid) return;
+    await removeAdmin(pid).catch((e) => setAdminMsg(errorText(e)));
+    setAdmins(await listAdmins(uid));
+  };
+
+  const destroy = async () => {
+    if (!uid) return;
+    // ضغطتين: الأولى بتسأل
+    if (!confirmDelete) return setConfirmDelete(true);
+    setBusy(true);
+    try {
+      await deleteMyRoom(uid);
+      router.replace('/rooms');
     } catch (e) {
       setErr(errorText(e));
       setBusy(false);
@@ -135,6 +189,52 @@ export default function CreateRoom() {
           </View>
         </View>
 
+        {exists && (
+          <View style={[styles.block, styles.card]}>
+            <View style={styles.rowBetween}>
+              <T w="black" style={{ fontSize: 17 }}>المشرفين</T>
+              <T style={{ fontSize: 13, color: colors.textMuted }}>{ar(admins.length)} من 10</T>
+            </View>
+            <T style={{ fontSize: 13, lineHeight: 20, color: colors.textMuted }}>
+              المشرف بيقدر يكتم المايك، وينزّل حدا عن المقعد، ويطرد، ويفتح ألعاب بالغرفة.
+            </T>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TextInput
+                value={adminId}
+                onChangeText={(t) => setAdminId(t.replace(/[^0-9٠-٩]/g, ''))}
+                keyboardType="number-pad"
+                placeholder="رقم الـ ID"
+                placeholderTextColor={colors.textDim}
+                style={[styles.input, { flex: 1, height: 48, fontSize: 16 }]}
+              />
+              <Pressable
+                accessibilityRole="button"
+                disabled={!adminId}
+                onPress={add}
+                style={[styles.addBtn, !adminId && { opacity: 0.5 }]}>
+                <T w="black" style={{ fontSize: 15, color: colors.ink }}>ضيف</T>
+              </Pressable>
+            </View>
+            {!!adminMsg && <T w="bold" style={{ fontSize: 13, color: colors.peach }}>{adminMsg}</T>}
+            {admins.map((a) => (
+              <View key={a.uid} style={styles.admin}>
+                <Avatar avatar={a.avatar} size={36} />
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <T w="black" style={{ fontSize: 15 }} numberOfLines={1}>⭐ {a.name || 'لاعب'}</T>
+                  <T style={{ fontSize: 12, color: colors.textMuted }}>ID {ar(a.pid)}</T>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`شيل ${a.name || 'المشرف'}`}
+                  onPress={() => remove(a.pid)}
+                  style={styles.removeBtn}>
+                  <CloseIcon size={14} />
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        )}
+
         {!!err && <T w="bold" style={styles.err}>{err}</T>}
 
         <PillButton
@@ -144,6 +244,13 @@ export default function CreateRoom() {
           onPress={save}
           style={styles.cta}
         />
+        {exists && (
+          <Pressable accessibilityRole="button" disabled={busy} onPress={destroy} style={{ marginTop: 14, alignSelf: 'center' }}>
+            <T w="bold" style={{ fontSize: 14, color: confirmDelete ? colors.alert : colors.textDim, textAlign: 'center' }}>
+              {confirmDelete ? 'متأكد؟ الغرفة بتنحذف مع المشرفين. اضغط كمان مرة' : 'حذف الغرفة'}
+            </T>
+          </Pressable>
+        )}
       </ScrollView>
     </Screen>
   );
@@ -198,6 +305,9 @@ const styles = StyleSheet.create({
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { height: 40, paddingHorizontal: 18, borderRadius: 20, backgroundColor: colors.surface, justifyContent: 'center' },
+  addBtn: { height: 48, paddingHorizontal: 20, borderRadius: 18, backgroundColor: colors.yellow, alignItems: 'center', justifyContent: 'center' },
+  admin: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  removeBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surfaceHigh, alignItems: 'center', justifyContent: 'center' },
   err: { marginTop: 12, marginHorizontal: 20, textAlign: 'center', fontSize: 13, color: colors.peach },
   cta: { marginTop: 'auto', marginHorizontal: 20, marginBottom: 8, paddingTop: 0 },
 });

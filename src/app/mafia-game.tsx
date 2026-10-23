@@ -35,7 +35,8 @@ import { colors } from '@/theme';
 const back = () => (router.canGoBack() ? router.back() : router.replace('/mafia'));
 
 export default function MafiaGameScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // room: الطاولة مفتوحة من غرفة صوتية (الصوت من الغرفة نفسها)
+  const { id, room: inRoom } = useLocalSearchParams<{ id: string; room?: string }>();
   const { user, uid, loading } = useSession();
   const room = useMafiaGame(Number(id), { uid, name: user?.name ?? '' });
 
@@ -53,7 +54,7 @@ export default function MafiaGameScreen() {
       ) : (
         <Play room={room} game={game} uid={uid} />
       )}
-      {game && <GameTalk game="mafia" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} withChat={false} />}
+      {game && <GameTalk game="mafia" id={game.id} players={game.players} uid={uid} finished={game.status === 'finished'} inRoom={!!inRoom} withChat={false} />}
     </Screen>
   );
 }
