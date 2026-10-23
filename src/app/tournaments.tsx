@@ -6,7 +6,7 @@ import { BackButton, Screen, T } from '@/components/ui';
 import { errorText } from '@/lib/errors';
 import { ar } from '@/lib/format';
 import { useSession } from '@/lib/session';
-import { STATUS_NAMES, listTournaments, type Tournament } from '@/lib/tournaments';
+import { STATUS_NAMES, gameInfo, isTeamGame, listTournaments, prizeText, type Tournament } from '@/lib/tournaments';
 import { colors } from '@/theme';
 
 const STATUS_COLORS: Record<Tournament['status'], string> = {
@@ -45,7 +45,7 @@ export default function Tournaments() {
         {!!msg && <T w="bold" style={{ color: colors.peach, textAlign: 'center' }}>{msg}</T>}
         {list && sorted.length === 0 && (
           <T style={{ fontSize: 15, color: colors.textMuted, textAlign: 'center', marginTop: 40 }}>
-            ما في بطولات هلأ. تابعنا، قريباً بطولة بلوت!
+            ما في بطولات هلأ. تابعنا، قريباً بطولة!
           </T>
         )}
         {sorted.map((t) => (
@@ -54,11 +54,12 @@ export default function Tournaments() {
             accessibilityRole="button"
             onPress={() => router.push({ pathname: '/tournament', params: { id: String(t.id) } })}
             style={[styles.card, t.status === 'open' && { borderColor: colors.yellow }]}>
-            <T style={{ fontSize: 40, lineHeight: 50 }}>♠️</T>
+            <T style={{ fontSize: 40, lineHeight: 50 }}>{gameInfo(t.game).emoji}</T>
             <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
               <T w="black" style={{ fontSize: 18 }} numberOfLines={1}>{t.title}</T>
               <T style={{ fontSize: 13, color: colors.textMuted }}>
-                بلوت · {ar(t.size)} فرق{t.prize_coins ? ` · الجائزة ${ar(t.prize_coins.toLocaleString('en'))} 🪙 لكل لاعب` : ''}
+                {gameInfo(t.game).name} · {ar(t.size)} {isTeamGame(t.game) ? 'فرق' : 'لاعبين'}
+                {prizeText(t)}
               </T>
               {!!t.starts_at && t.status === 'open' && (
                 <T style={{ fontSize: 12, color: colors.textSoft }}>

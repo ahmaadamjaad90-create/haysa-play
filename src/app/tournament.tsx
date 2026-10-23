@@ -10,6 +10,9 @@ import { useSession } from '@/lib/session';
 import {
   STATUS_NAMES,
   cancelTournament,
+  gameInfo,
+  isTeamGame,
+  prizeText,
   leaveTournament,
   registerTeam,
   roundName,
@@ -65,6 +68,9 @@ export default function TournamentScreen() {
   const myMatch = myTeam && matches.find((m) => m.status === 'playing' && (m.team_a === myTeam.id || m.team_b === myTeam.id));
   const winner = teamOf(t.winner_team);
   const rounds = Math.log2(t.size);
+  const info = gameInfo(t.game);
+  const teamsMode = isTeamGame(t.game);
+  const unit = teamsMode ? 'فرق' : 'لاعبين';
 
   const act = async (fn: () => Promise<unknown>) => {
     setBusy(true);
@@ -89,32 +95,34 @@ export default function TournamentScreen() {
         <View style={styles.hero}>
           <T style={{ fontSize: 44, lineHeight: 54 }}>🏆</T>
           <View style={{ flex: 1, gap: 2 }}>
-            <T w="black" style={{ fontSize: 16 }}>بطولة بلوت · {ar(t.size)} فرق · {STATUS_NAMES[t.status]}</T>
-            <T style={{ fontSize: 13, color: '#FFE0D6' }}>
-              {t.prize_coins ? `الجائزة: ${ar(t.prize_coins.toLocaleString('en'))} 🪙 لكل لاعب بالفريق الفائز` : 'بطولة ودّية'}
+            <T w="black" style={{ fontSize: 16 }}>
+              {info.emoji} بطولة {info.name} · {ar(t.size)} {unit} · {STATUS_NAMES[t.status]}
             </T>
-            <T style={{ fontSize: 12, color: '#FFE0D6' }}>فريقين من لاعبين اتنين · خروج المغلوب · كل مباراة لـ 152</T>
+            <T style={{ fontSize: 13, color: '#FFE0D6' }}>
+              {prizeText(t) ? `${prizeText(t).replace(' · ', '')} لكل لاعب ${teamsMode ? 'بالفريق الفائز' : 'للبطل'}` : 'بطولة ودّية'}
+            </T>
+            <T style={{ fontSize: 12, color: '#FFE0D6' }}>{teamsMode ? 'فرق من لاعبين اتنين' : 'لاعب ضد لاعب'} · خروج المغلوب</T>
           </View>
         </View>
 
         {winner && (
           <View style={[styles.card, { borderColor: colors.yellow, borderWidth: 2, alignItems: 'center' }]}>
-            <T w="heading" style={{ fontSize: 22, lineHeight: 30 }}>👑 الأبطال: {winner.name}</T>
-            <T style={{ color: colors.textMuted }}>{winner.a?.name} و {winner.b?.name}</T>
+            <T w="heading" style={{ fontSize: 22, lineHeight: 30 }}>👑 {teamsMode ? 'الأبطال' : 'البطل'}: {winner.name}</T>
+            {teamsMode && <T style={{ color: colors.textMuted }}>{winner.a?.name} و {winner.b?.name}</T>}
           </View>
         )}
 
         {myMatch && myMatch.game_id && (
           <PillButton
-            label="مباراتك جاهزة! يلا العب ♠️"
-            onPress={() => router.push({ pathname: '/baloot-game', params: { id: String(myMatch.game_id) } })}
+            label={`مباراتك جاهزة! يلا العب ${info.emoji}`}
+            onPress={() => router.push({ pathname: info.route as '/baloot-game', params: { id: String(myMatch.game_id) } })}
           />
         )}
 
         {t.status === 'open' &&
           (myTeam ? (
             <View style={styles.card}>
-              <T w="black" style={{ fontSize: 16 }}>إنت مسجّل بفريق «{myTeam.name}» ✅</T>
+              <T w="black" style={{ fontSize: 16 }}>{teamsMode ? `إنت مسجّل بفريق «${myTeam.name}»` : 'إنت مسجّل بالبطولة'} ✅</T>
               <T style={{ fontSize: 13, color: colors.textMuted }}>لما تبلّش البطولة بتطلعلك مباراتك هون.</T>
               <Pressable accessibilityRole="button" disabled={busy} onPress={() => act(() => leaveTournament(t.id))}>
                 <T w="bold" style={{ fontSize: 13, color: colors.peach }}>انسحاب</T>
@@ -122,27 +130,33 @@ export default function TournamentScreen() {
             </View>
           ) : (
             <View style={styles.card}>
-              <T w="black" style={{ fontSize: 16 }}>سجّل فريقك</T>
-              <TextInput
-                value={teamName}
-                onChangeText={setTeamName}
-                maxLength={20}
-                placeholder="اسم الفريق"
-                placeholderTextColor={colors.textDim}
-                style={styles.input}
-              />
-              <TextInput
-                value={partner}
-                onChangeText={(x) => setPartner(x.replace(/[^0-9٠-٩]/g, ''))}
-                keyboardType="number-pad"
-                placeholder="رقم الـ ID تبع شريكك"
-                placeholderTextColor={colors.textDim}
-                style={styles.input}
-              />
+              <T w="black" style={{ fontSize: 16 }}>{teamsMode ? 'سجّل فريقك' : 'سجّل بالبطولة'}</T>
+              {teamsMode && (
+                <>
+                  <TextInput
+                    value={teamName}
+                    onChangeText={setTeamName}
+                    maxLength={20}
+                    placeholder="اسم الفريق"
+                    placeholderTextColor={colors.textDim}
+                    style={styles.input}
+                  />
+                  <TextInput
+                    value={partner}
+                    onChangeText={(x) => setPartner(x.replace(/[^0-9٠-٩]/g, ''))}
+                    keyboardType="number-pad"
+                    placeholder="رقم الـ ID تبع شريكك"
+                    placeholderTextColor={colors.textDim}
+                    style={styles.input}
+                  />
+                </>
+              )}
               <PillButton
                 label="سجّل"
-                disabled={busy || teamName.trim().length < 2 || !partner}
-                onPress={() => act(() => registerTeam(t.id, Number(toLatinDigits(partner)), teamName.trim()))}
+                disabled={busy || (teamsMode && (teamName.trim().length < 2 || !partner))}
+                onPress={() =>
+                  act(() => registerTeam(t.id, teamsMode ? Number(toLatinDigits(partner)) : null, teamsMode ? teamName.trim() : ''))
+                }
               />
             </View>
           ))}
@@ -153,7 +167,7 @@ export default function TournamentScreen() {
           <View style={[styles.card, { borderColor: colors.sky, borderWidth: 1 }]}>
             <T w="black" style={{ fontSize: 15, color: colors.sky }}>👑 تحكم الأدمن</T>
             {t.status === 'open' && (
-              <PillButton label={`ابدأ البطولة (${ar(teams.length)} فرق)`} disabled={busy} onPress={() => act(() => startTournament(t.id))} />
+              <PillButton label={`ابدأ البطولة (${ar(teams.length)} ${unit})`} disabled={busy} onPress={() => act(() => startTournament(t.id))} />
             )}
             <Pressable
               accessibilityRole="button"
@@ -188,8 +202,10 @@ export default function TournamentScreen() {
             );
           })}
 
-        <T w="heading" style={{ fontSize: 20, lineHeight: 28 }}>الفرق ({ar(teams.length)} من {ar(t.size)})</T>
-        {teams.length === 0 && <T style={{ color: colors.textMuted }}>لسا ما في فرق. كون أول فريق!</T>}
+        <T w="heading" style={{ fontSize: 20, lineHeight: 28 }}>
+          {teamsMode ? 'الفرق' : 'اللاعبين'} ({ar(teams.length)} من {ar(t.size)})
+        </T>
+        {teams.length === 0 && <T style={{ color: colors.textMuted }}>لسا ما حدا مسجّل. كون الأول!</T>}
         {teams.map((x) => (
           <TeamRow key={x.id} team={x} mine={x.id === myTeam?.id} />
         ))}
@@ -203,13 +219,19 @@ function TeamRow({ team, mine }: { team: TournamentTeam; mine: boolean }) {
     <View style={[styles.team, mine && { borderColor: colors.yellow }, team.eliminated && { opacity: 0.45 }]}>
       <View style={{ flexDirection: 'row' }}>
         <Avatar avatar={team.a?.avatar ?? 'dalla'} size={32} />
-        <View style={{ marginStart: -10 }}>
-          <Avatar avatar={team.b?.avatar ?? 'dalla'} size={32} />
-        </View>
+        {team.b && (
+          <View style={{ marginStart: -10 }}>
+            <Avatar avatar={team.b.avatar} size={32} />
+          </View>
+        )}
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <T w="black" style={{ fontSize: 15 }} numberOfLines={1}>{team.name}</T>
-        <T style={{ fontSize: 12, color: colors.textMuted }} numberOfLines={1}>{team.a?.name ?? 'لاعب'} و {team.b?.name ?? 'لاعب'}</T>
+        {team.b ? (
+          <T style={{ fontSize: 12, color: colors.textMuted }} numberOfLines={1}>{team.a?.name ?? 'لاعب'} و {team.b.name ?? 'لاعب'}</T>
+        ) : (
+          <T style={{ fontSize: 12, color: colors.textMuted }}>ID {ar(team.a?.public_id ?? 0)}</T>
+        )}
       </View>
       {team.eliminated && <T style={{ fontSize: 12, color: colors.textDim }}>خرج</T>}
     </View>

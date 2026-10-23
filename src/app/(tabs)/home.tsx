@@ -212,7 +212,7 @@ export default function Home() {
           <T style={{ fontSize: 40, lineHeight: 50 }}>🏆</T>
           <View style={{ flex: 1 }}>
             <T w="heading" style={{ fontSize: 22, lineHeight: 30, color: colors.ink }}>البطولات</T>
-            <T w="bold" style={{ fontSize: 13, color: colors.ink }}>سجّل فريقك بالبلوت واربح جوائز</T>
+            <T w="bold" style={{ fontSize: 13, color: colors.ink }}>العب بطولات واربح عملات وجواهر</T>
           </View>
           <T w="black" style={{ fontSize: 22, color: colors.ink }}>‹</T>
         </Pressable>

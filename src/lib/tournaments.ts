@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { ar } from './format';
+import { roomGame } from './roomGames';
 import { supabase } from './supabase';
 
 export type Tournament = {
   id: number;
   title: string;
-  game: 'baloot';
+  game: TournamentGame;
   size: number;
   prize_coins: number;
+  prize_gems: number;
   starts_at: string | null;
   status: 'open' | 'running' | 'finished' | 'cancelled';
   winner_team: number | null;
@@ -20,7 +23,8 @@ export type TournamentTeam = {
   id: number;
   name: string;
   p1: string;
-  p2: string;
+  // null بالألعاب الفردية
+  p2: string | null;
   eliminated: boolean;
   a: Person | null;
   b: Person | null;
@@ -37,6 +41,18 @@ export type TournamentMatch = {
   status: 'pending' | 'playing' | 'done';
 };
 
+// الألعاب اللي فيها بطولات (فرق من اتنين بالبلوت والكوت، والباقي لاعب ضد لاعب)
+export const TOURNAMENT_GAMES = ['baloot', 'kout', 'ludo', 'colors', 'domino', 'backgammon', 'trivia'] as const;
+export type TournamentGame = (typeof TOURNAMENT_GAMES)[number];
+export const isTeamGame = (g: string) => g === 'baloot' || g === 'kout';
+export const gameInfo = (g: string) => roomGame(g)!;
+
+// « · الجائزة 100 🪙 + 5 💎» أو فاضي
+export function prizeText(t: Tournament) {
+  const parts = [t.prize_coins && `${ar(t.prize_coins.toLocaleString('en'))} 🪙`, t.prize_gems && `${ar(t.prize_gems.toLocaleString('en'))} 💎`].filter(Boolean);
+  return parts.length ? ` · الجائزة ${parts.join(' + ')}` : '';
+}
+
 export const STATUS_NAMES: Record<Tournament['status'], string> = {
   open: 'التسجيل مفتوح',
   running: 'شغّالة',
@@ -50,9 +66,10 @@ const rpc = async <T>(fn: string, args?: Record<string, unknown>) => {
   return data as T;
 };
 
-export const createTournament = (title: string, size: number, prize: number, starts: string | null) =>
-  rpc<number>('admin_create_tournament', { title, size, prize, starts });
-export const registerTeam = (tid: number, partner: number, name: string) =>
+export const createTournament = (game: TournamentGame, title: string, size: number, coins: number, gems: number) =>
+  rpc<number>('admin_create_tournament', { game, title, size, prize_coins: coins, prize_gems: gems, starts: null });
+// partner = null بالألعاب الفردية
+export const registerTeam = (tid: number, partner: number | null, name: string) =>
   rpc<number>('tournament_register', { tid, partner, team_name: name });
 export const leaveTournament = (tid: number) => rpc<void>('tournament_leave', { tid });
 export const startTournament = (tid: number) => rpc<void>('admin_start_tournament', { tid });

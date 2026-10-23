@@ -18,7 +18,7 @@ import {
 import { errorText } from '@/lib/errors';
 import { ar, toLatinDigits } from '@/lib/format';
 import { useSession } from '@/lib/session';
-import { createTournament } from '@/lib/tournaments';
+import { TOURNAMENT_GAMES, createTournament, gameInfo, isTeamGame, type TournamentGame } from '@/lib/tournaments';
 import { colors, fonts } from '@/theme';
 
 const num = (s: string) => Number(toLatinDigits(s) || 0);
@@ -166,9 +166,11 @@ function PlayerTools() {
 }
 
 function TournamentMaker() {
+  const [game, setGame] = useState<TournamentGame>('baloot');
   const [title, setTitle] = useState('');
   const [size, setSize] = useState(8);
   const [prize, setPrize] = useState('');
+  const [gemsPrize, setGemsPrize] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
 
@@ -176,7 +178,7 @@ function TournamentMaker() {
     setBusy(true);
     setMsg('');
     try {
-      const id = await createTournament(title.trim(), size, num(prize), null);
+      const id = await createTournament(game, title.trim(), size, num(prize), num(gemsPrize));
       router.push({ pathname: '/tournament', params: { id: String(id) } });
     } catch (e) {
       setMsg(errorText(e));
@@ -187,17 +189,31 @@ function TournamentMaker() {
 
   return (
     <View style={styles.card}>
-      <T w="black" style={styles.title}>🏆 بطولة بلوت جديدة</T>
+      <T w="black" style={styles.title}>🏆 بطولة جديدة</T>
+      <View style={styles.row}>
+        {TOURNAMENT_GAMES.map((g) => (
+          <Pressable key={g} accessibilityRole="button" onPress={() => setGame(g)} style={[styles.gameChip, game === g && { backgroundColor: colors.yellow }]}>
+            <T w="black" style={{ fontSize: 13, color: game === g ? colors.ink : colors.white }}>{gameInfo(g).emoji} {gameInfo(g).name}</T>
+          </Pressable>
+        ))}
+      </View>
+      <T style={{ fontSize: 12, color: colors.textMuted }}>
+        {isTeamGame(game) ? 'فرق من لاعبين اتنين' : 'لاعب ضد لاعب'} · خروج المغلوب
+      </T>
       <TextInput value={title} onChangeText={setTitle} maxLength={40} placeholder="اسم البطولة (مثلاً: كأس هيصة)" placeholderTextColor={colors.textDim} style={styles.input} />
       <View style={styles.row}>
-        <T style={{ color: colors.textMuted }}>عدد الفرق:</T>
+        <T style={{ color: colors.textMuted }}>{isTeamGame(game) ? 'عدد الفرق:' : 'عدد اللاعبين:'}</T>
         {[4, 8, 16].map((n) => (
           <Pressable key={n} accessibilityRole="button" onPress={() => setSize(n)} style={[styles.chip, size === n && { backgroundColor: colors.yellow }]}>
             <T w="black" style={{ color: size === n ? colors.ink : colors.white }}>{ar(n)}</T>
           </Pressable>
         ))}
       </View>
-      <TextInput value={prize} onChangeText={(x) => setPrize(digits(x))} keyboardType="number-pad" placeholder="الجائزة بالعملات لكل لاعب (اختياري)" placeholderTextColor={colors.textDim} style={styles.input} />
+      <T style={{ fontSize: 12, color: colors.textMuted }}>الجائزة لكل لاعب بالفائز (اختياري):</T>
+      <View style={styles.row}>
+        <TextInput value={prize} onChangeText={(x) => setPrize(digits(x))} keyboardType="number-pad" placeholder="🪙 عملات" placeholderTextColor={colors.textDim} style={[styles.input, { flex: 1 }]} />
+        <TextInput value={gemsPrize} onChangeText={(x) => setGemsPrize(digits(x))} keyboardType="number-pad" placeholder="💎 جواهر" placeholderTextColor={colors.textDim} style={[styles.input, { flex: 1 }]} />
+      </View>
       {!!msg && <T w="bold" style={{ fontSize: 13, color: colors.peach }}>{msg}</T>}
       <PillButton label="اعمل البطولة" disabled={busy || title.trim().length < 2} onPress={make} />
       <Pressable accessibilityRole="button" onPress={() => router.push('/tournaments')}>
@@ -260,5 +276,6 @@ const styles = StyleSheet.create({
   },
   small: { height: 46, paddingHorizontal: 18, borderRadius: 14, backgroundColor: colors.yellow, alignItems: 'center', justifyContent: 'center' },
   ban: { flex: 1, height: 40, borderRadius: 12, backgroundColor: colors.coral, alignItems: 'center', justifyContent: 'center' },
+  gameChip: { height: 36, paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.surfaceHigh, justifyContent: 'center' },
   chip: { width: 48, height: 38, borderRadius: 12, backgroundColor: colors.surfaceHigh, alignItems: 'center', justifyContent: 'center' },
 });
