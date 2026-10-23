@@ -62,7 +62,8 @@ export default function TournamentScreen() {
     );
   }
 
-  const isAdmin = !!user?.isAdmin;
+  // الأدمن أو المنظّم اللي عمل هالبطولة
+  const isAdmin = !!user?.isAdmin || (!!user?.isOrganizer && t.created_by === uid);
   const myTeam = teams.find((x) => x.p1 === uid || x.p2 === uid);
   const teamOf = (tid: number | null) => teams.find((x) => x.id === tid);
   const myMatch = myTeam && matches.find((m) => m.status === 'playing' && (m.team_a === myTeam.id || m.team_b === myTeam.id));
@@ -165,7 +166,7 @@ export default function TournamentScreen() {
 
         {isAdmin && (t.status === 'open' || t.status === 'running') && (
           <View style={[styles.card, { borderColor: colors.sky, borderWidth: 1 }]}>
-            <T w="black" style={{ fontSize: 15, color: colors.sky }}>👑 تحكم الأدمن</T>
+            <T w="black" style={{ fontSize: 15, color: colors.sky }}>{user?.isAdmin ? '👑 تحكم الأدمن' : '🎖️ تحكم المنظّم'}</T>
             {t.status === 'open' && (
               <PillButton label={`ابدأ البطولة (${ar(teams.length)} ${unit})`} disabled={busy} onPress={() => act(() => startTournament(t.id))} />
             )}

@@ -26,6 +26,7 @@ export type AdminPlayer = {
   vip_points: number;
   banned_until: string | null;
   is_admin: boolean;
+  is_organizer: boolean;
   created_at: string;
   has_room: boolean;
 };
@@ -37,6 +38,14 @@ export const adminBan = (pid: number, days: number | null) => rpc<void>('admin_b
 export const adminUnban = (pid: number) => rpc<void>('admin_unban', { pid });
 export const adminGrant = (pid: number, coins: number, gems: number) =>
   rpc<{ name: string | null; coins: number; gems: number }>('admin_grant', { pid, add_coins: coins, add_gems: gems });
+// من رصيدي أنا للاعب
+export const adminTransfer = (pid: number, coins: number, gems: number) =>
+  rpc<{ name: string | null; my_coins: number; my_gems: number }>('admin_transfer', { pid, send_coins: coins, send_gems: gems });
+
+export type Organizer = { pid: number; name: string | null; avatar: string };
+export const listOrganizers = () => rpc<Organizer[]>('admin_list_organizers');
+export const setOrganizer = (pid: number, enabled: boolean) => rpc<Organizer>('admin_set_organizer', { pid, enabled });
+
 export const adminDeleteRoom = (num: number) => rpc<void>('admin_delete_room', { num });
 
 export const isBanned = (until: string | null) => !!until && (until === 'infinity' || Date.parse(until) > Date.now());

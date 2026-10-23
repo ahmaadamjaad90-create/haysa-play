@@ -18,6 +18,8 @@ export type User = {
   vipPoints: number;
   // أدمن التطبيق
   isAdmin: boolean;
+  // مسموحله يعمل بطولات ويديرها
+  isOrganizer: boolean;
   // محظور لحد هالوقت (null مش محظور)
   bannedUntil: string | null;
   // false لحد ما يخلص شاشة "خلّينا نعرفك"
@@ -54,6 +56,7 @@ type ProfileRow = {
   vip_points: number;
   // بيجوا من 0023 (ممكن يكونوا ناقصين قبل ما ينشغّل)
   is_admin?: boolean;
+  is_organizer?: boolean;
   banned_until?: string | null;
 };
 
@@ -116,6 +119,7 @@ function toUser(p: ProfileRow): User {
     gems: p.gems,
     vipPoints: p.vip_points,
     isAdmin: !!p.is_admin,
+    isOrganizer: !!p.is_organizer,
     bannedUntil: p.banned_until ?? null,
     ready: !!p.name,
   };

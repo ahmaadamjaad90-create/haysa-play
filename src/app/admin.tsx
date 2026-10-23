@@ -7,44 +7,60 @@ import { BackButton, PillButton, Screen, T } from '@/components/ui';
 import {
   adminBan,
   adminDeleteRoom,
-  adminGrant,
   adminPlayer,
   adminStats,
+  adminTransfer,
   adminUnban,
   isBanned,
+  listOrganizers,
+  setOrganizer,
   type AdminPlayer,
   type AdminStats,
+  type Organizer,
 } from '@/lib/admin';
 import { errorText } from '@/lib/errors';
 import { ar, toLatinDigits } from '@/lib/format';
 import { useSession } from '@/lib/session';
+import { supabase } from '@/lib/supabase';
 import { TOURNAMENT_GAMES, createTournament, gameInfo, isTeamGame, type TournamentGame } from '@/lib/tournaments';
 import { colors, fonts } from '@/theme';
 
 const num = (s: string) => Number(toLatinDigits(s) || 0);
 const digits = (s: string) => s.replace(/[^0-9٠-٩]/g, '');
 
-// لوحة أدمن التطبيق
+// رصيدي من السيرفر (بعد التحويل أو جائزة بطولة)
+function useRefreshBalance() {
+  const { uid, setBalance } = useSession();
+  return useCallback(async () => {
+    if (!uid) return;
+    const { data } = await supabase.from('profiles').select('coins, gems').eq('id', uid).single<{ coins: number; gems: number }>();
+    if (data) setBalance(data.coins, data.gems);
+  }, [uid, setBalance]);
+}
+
+// لوحة الأدمن (والمنظّم بيشوف قسم البطولات بس)
 export default function Admin() {
   const { user, loading } = useSession();
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const isAdmin = !!user?.isAdmin;
 
   useFocusEffect(
     useCallback(() => {
+      if (!isAdmin) return;
       adminStats()
         .then(setStats)
         .catch(() => {});
-    }, []),
+    }, [isAdmin]),
   );
 
   if (!loading && !user) return <Redirect href="/login" />;
-  if (user && !user.isAdmin) return <Redirect href="/home" />;
+  if (user && !user.isAdmin && !user.isOrganizer) return <Redirect href="/home" />;
 
   return (
     <Screen>
       <View style={styles.header}>
         <BackButton fallback="/profile" />
-        <T w="heading" style={styles.h1}>لوحة الأدمن 👑</T>
+        <T w="heading" style={styles.h1}>{isAdmin ? 'لوحة الأدمن 👑' : 'نظّم بطولة 🏆'}</T>
       </View>
       <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 8, gap: 14 }} keyboardShouldPersistTaps="handled">
         {stats && (
@@ -66,9 +82,17 @@ export default function Admin() {
             ))}
           </View>
         )}
-        <PlayerTools />
+        {user && (
+          <View style={styles.wallet}>
+            <T w="black" style={{ fontSize: 15 }}>رصيدي:</T>
+            <T w="black" style={{ fontSize: 15, color: colors.yellow }}>{ar(user.coins.toLocaleString('en'))} 🪙</T>
+            <T w="black" style={{ fontSize: 15, color: colors.sky }}>{ar(user.gems.toLocaleString('en'))} 💎</T>
+          </View>
+        )}
+        {isAdmin && <PlayerTools />}
         <TournamentMaker />
-        <RoomTools />
+        {isAdmin && <OrganizerTools />}
+        {isAdmin && <RoomTools />}
       </ScrollView>
     </Screen>
   );
@@ -81,6 +105,7 @@ function PlayerTools() {
   const [gems, setGems] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const refreshBalance = useRefreshBalance();
 
   const run = async (fn: () => Promise<unknown>, done?: string) => {
     setBusy(true);
@@ -91,8 +116,12 @@ function PlayerTools() {
       if (done) setMsg(done);
     } catch (e) {
       const t = errorText(e);
-      setMsg(t.includes('not found') ? 'ما في لاعب بهالرقم' : t);
-      setP(null);
+      if (t.includes('not enough')) setMsg('رصيدك ما بيكفي');
+      else if (t.includes('yourself')) setMsg('ما فيك تحوّل لحالك');
+      else {
+        setMsg(t.includes('not found') ? 'ما في لاعب بهالرقم' : t);
+        setP(null);
+      }
     } finally {
       setBusy(false);
     }
@@ -118,6 +147,7 @@ function PlayerTools() {
               <T w="black" style={{ fontSize: 16 }}>{p.is_admin ? '👑 ' : ''}{p.name || 'بدون اسم'} · ID {ar(p.pid)}</T>
               <T style={{ fontSize: 12, color: colors.textMuted }}>
                 {ar(p.coins.toLocaleString('en'))} 🪙 · {ar(p.gems.toLocaleString('en'))} 💎 · {ar(p.xp)} XP{p.has_room ? ' · عنده غرفة' : ''}
+                {p.is_organizer ? ' · 🎖️ منظّم' : ''}
               </T>
               {banned && (
                 <T w="bold" style={{ fontSize: 12, color: colors.peach }}>
@@ -149,14 +179,15 @@ function PlayerTools() {
             <TextInput value={gems} onChangeText={(x) => setGems(digits(x))} keyboardType="number-pad" placeholder="💎 جواهر" placeholderTextColor={colors.textDim} style={[styles.input, { flex: 1 }]} />
           </View>
           <PillButton
-            label="أعطيه"
+            label="🎁 حوّله هدية من رصيدي"
             disabled={busy || (!coins && !gems)}
             onPress={() =>
               run(async () => {
-                await adminGrant(p.pid, num(coins), num(gems));
+                await adminTransfer(p.pid, num(coins), num(gems));
                 setCoins('');
                 setGems('');
-              }, '✅ وصلته')
+                await refreshBalance();
+              }, '✅ وصلته الهدية')
             }
           />
         </>
@@ -173,15 +204,18 @@ function TournamentMaker() {
   const [gemsPrize, setGemsPrize] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const refreshBalance = useRefreshBalance();
 
   const make = async () => {
     setBusy(true);
     setMsg('');
     try {
       const id = await createTournament(game, title.trim(), size, num(prize), num(gemsPrize));
+      await refreshBalance();
       router.push({ pathname: '/tournament', params: { id: String(id) } });
     } catch (e) {
-      setMsg(errorText(e));
+      const t = errorText(e);
+      setMsg(t.includes('not enough') ? 'رصيدك ما بيكفي للجائزة' : t);
     } finally {
       setBusy(false);
     }
@@ -209,7 +243,9 @@ function TournamentMaker() {
           </Pressable>
         ))}
       </View>
-      <T style={{ fontSize: 12, color: colors.textMuted }}>الجائزة لكل لاعب بالفائز (اختياري):</T>
+      <T style={{ fontSize: 12, color: colors.textMuted }}>
+        الجائزة لكل لاعب بالفائز (اختياري). بتنخصم من رصيدك هلأ{isTeamGame(game) ? ' (مرتين، للاعبين التنين)' : ''}، وبترجعلك إذا لغيت البطولة.
+      </T>
       <View style={styles.row}>
         <TextInput value={prize} onChangeText={(x) => setPrize(digits(x))} keyboardType="number-pad" placeholder="🪙 عملات" placeholderTextColor={colors.textDim} style={[styles.input, { flex: 1 }]} />
         <TextInput value={gemsPrize} onChangeText={(x) => setGemsPrize(digits(x))} keyboardType="number-pad" placeholder="💎 جواهر" placeholderTextColor={colors.textDim} style={[styles.input, { flex: 1 }]} />
@@ -219,6 +255,59 @@ function TournamentMaker() {
       <Pressable accessibilityRole="button" onPress={() => router.push('/tournaments')}>
         <T w="bold" style={{ fontSize: 13, color: colors.yellow, textAlign: 'center' }}>كل البطولات ←</T>
       </Pressable>
+    </View>
+  );
+}
+
+// الناس المسموحلهم يعملوا بطولات ويديروها
+function OrganizerTools() {
+  const [list, setList] = useState<Organizer[]>([]);
+  const [id, setId] = useState('');
+  const [msg, setMsg] = useState('');
+  useFocusEffect(
+    useCallback(() => {
+      listOrganizers()
+        .then(setList)
+        .catch(() => {});
+    }, []),
+  );
+  const change = async (pid: number, on: boolean) => {
+    setMsg('');
+    try {
+      await setOrganizer(pid, on);
+      setList(await listOrganizers());
+      if (on) setId('');
+    } catch (e) {
+      const t = errorText(e);
+      setMsg(t.includes('not found') ? 'ما في لاعب بهالرقم' : t);
+    }
+  };
+  return (
+    <View style={styles.card}>
+      <T w="black" style={styles.title}>🎖️ منظّمين البطولات</T>
+      <T style={{ fontSize: 12, color: colors.textMuted }}>
+        بيقدروا يعملوا بطولات بكل الألعاب، ويبلّشوها ويلغوها ويحسموا مبارياتها (بطولاتهم بس). الجائزة من رصيدهم.
+      </T>
+      <View style={styles.row}>
+        <TextInput value={id} onChangeText={(x) => setId(digits(x))} keyboardType="number-pad" placeholder="رقم الـ ID" placeholderTextColor={colors.textDim} style={[styles.input, { flex: 1 }]} />
+        <Pressable accessibilityRole="button" disabled={!id} onPress={() => change(num(id), true)} style={[styles.small, !id && { opacity: 0.5 }]}>
+          <T w="black" style={{ color: colors.ink }}>ضيف</T>
+        </Pressable>
+      </View>
+      {!!msg && <T w="bold" style={{ fontSize: 13, color: colors.peach }}>{msg}</T>}
+      {list.length === 0 && <T style={{ fontSize: 13, color: colors.textDim }}>لسا ما في منظّمين</T>}
+      {list.map((o) => (
+        <View key={o.pid} style={styles.row}>
+          <Avatar avatar={o.avatar} size={34} />
+          <View style={{ flex: 1 }}>
+            <T w="black" style={{ fontSize: 14 }}>🎖️ {o.name || 'لاعب'}</T>
+            <T style={{ fontSize: 12, color: colors.textMuted }}>ID {ar(o.pid)}</T>
+          </View>
+          <Pressable accessibilityRole="button" onPress={() => change(o.pid, false)} style={[styles.small, { height: 34, backgroundColor: colors.surfaceHigh }]}>
+            <T w="black" style={{ fontSize: 12 }}>شيل</T>
+          </Pressable>
+        </View>
+      ))}
     </View>
   );
 }
@@ -259,6 +348,7 @@ function RoomTools() {
 const styles = StyleSheet.create({
   header: { paddingTop: 12, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', gap: 12 },
   h1: { fontSize: 28, lineHeight: 38 },
+  wallet: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: 12, borderRadius: 16, backgroundColor: colors.surface },
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   stat: { width: '31%', flexGrow: 1, padding: 10, borderRadius: 16, backgroundColor: colors.surface, alignItems: 'center' },
   card: { padding: 14, borderRadius: 20, backgroundColor: colors.surface, gap: 10 },

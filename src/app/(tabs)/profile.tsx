@@ -74,8 +74,14 @@ export default function Profile() {
 
       {xp !== null && <XpCard xp={xp} />}
 
-      {user.isAdmin && (
-        <PillButton label="👑 لوحة الأدمن" bg={colors.surfaceHigh} fg={colors.white} onPress={() => router.push('/admin')} style={{ marginTop: 12, marginHorizontal: 20 }} />
+      {(user.isAdmin || user.isOrganizer) && (
+        <PillButton
+          label={user.isAdmin ? '👑 لوحة الأدمن' : '🏆 نظّم بطولة'}
+          bg={colors.surfaceHigh}
+          fg={colors.white}
+          onPress={() => router.push('/admin')}
+          style={{ marginTop: 12, marginHorizontal: 20 }}
+        />
       )}
 
       {isGuest && (

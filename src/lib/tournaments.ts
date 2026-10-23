@@ -14,6 +14,7 @@ export type Tournament = {
   starts_at: string | null;
   status: 'open' | 'running' | 'finished' | 'cancelled';
   winner_team: number | null;
+  created_by: string | null;
   created_at: string;
 };
 
