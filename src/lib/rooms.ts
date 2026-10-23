@@ -48,10 +48,11 @@ export async function saveMyRoom(
   room: { name: string; seats: number; category: string; cover?: string | null },
 ) {
   if (!exists) {
-    const { error } = await supabase.from('rooms').insert(room);
-    // الغرفة موجودة أصلاً (ما قدرنا نقراها قبل): منعدّلها بدل ما نعمل وحدة جديدة
-    if (!error) return;
-    if (error.code !== '23505') throw error;
+    // الإنشاء بالاسم والمقاعد والنوع بس، والصورة بتنحط بالتعديل تحت
+    const { name, seats, category } = room;
+    const { error } = await supabase.from('rooms').insert({ name, seats, category });
+    // 23505: الغرفة موجودة أصلاً (ما قدرنا نقراها قبل)، فمنعدّلها
+    if (error && error.code !== '23505') throw error;
   }
   const { error } = await supabase.from('rooms').update(room).eq('owner', uid);
   if (error) throw error;
@@ -62,7 +63,8 @@ export async function uploadRoomCover(uid: string, uri: string, mime: string) {
   const ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg';
   const body = await (await fetch(uri)).arrayBuffer();
   const path = `${uid}/cover-${Date.now()}.${ext}`;
-  const { error } = await supabase.storage.from('room-covers').upload(path, body, { contentType: mime, upsert: true });
+  // اسم الملف جديد كل مرة، فما في داعي لـ upsert (بيحتاج صلاحيات قراءة زيادة)
+  const { error } = await supabase.storage.from('room-covers').upload(path, body, { contentType: mime });
   if (error) throw error;
   return supabase.storage.from('room-covers').getPublicUrl(path).data.publicUrl;
 }
