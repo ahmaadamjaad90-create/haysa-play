@@ -45,6 +45,7 @@ export default function Profile() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <T w="heading" style={styles.name}>{user.name}</T>
           <VipBadge level={level} />
+          {user.isAdmin && <T style={{ fontSize: 22 }}>👑</T>}
         </View>
         <Pressable accessibilityRole="button" accessibilityLabel="نسخ الرقم" onPress={copy} style={styles.id}>
           <T w="black" style={{ fontSize: 16 }}>
@@ -72,6 +73,10 @@ export default function Profile() {
       </View>
 
       {xp !== null && <XpCard xp={xp} />}
+
+      {user.isAdmin && (
+        <PillButton label="👑 لوحة الأدمن" bg={colors.surfaceHigh} fg={colors.white} onPress={() => router.push('/admin')} style={{ marginTop: 12, marginHorizontal: 20 }} />
+      )}
 
       {isGuest && (
         <View style={styles.guest}>

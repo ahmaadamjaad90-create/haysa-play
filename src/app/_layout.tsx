@@ -13,6 +13,7 @@ import { Platform, View } from 'react-native';
 
 // على الجوال: بيجهّز WebRTC لـ LiveKit قبل أي غرفة صوت
 import '@/lib/livekitPlatform';
+import { BannedGate } from '@/components/BannedGate';
 import { SessionProvider } from '@/lib/session';
 // بيسجّل فتح الصوت من أول لمسة بالتطبيق (سفاري ما بيشغّل صوت بدونها)
 import '@/lib/sound';
@@ -42,7 +43,9 @@ export default function RootLayout() {
     <View style={{ flex: 1 }} {...rtlWeb}>
       <SessionProvider>
         <StatusBar style="light" />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }} />
+        <BannedGate>
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }} />
+        </BannedGate>
       </SessionProvider>
     </View>
   );

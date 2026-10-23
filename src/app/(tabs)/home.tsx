@@ -208,6 +208,15 @@ export default function Home() {
           </View>
         </View>
 
+        <Pressable accessibilityRole="button" onPress={() => router.push('/tournaments')} style={styles.cup}>
+          <T style={{ fontSize: 40, lineHeight: 50 }}>🏆</T>
+          <View style={{ flex: 1 }}>
+            <T w="heading" style={{ fontSize: 22, lineHeight: 30, color: colors.ink }}>البطولات</T>
+            <T w="bold" style={{ fontSize: 13, color: colors.ink }}>سجّل فريقك بالبلوت واربح جوائز</T>
+          </View>
+          <T w="black" style={{ fontSize: 22, color: colors.ink }}>‹</T>
+        </Pressable>
+
         <Section title="ألعاب هيصة" />
         {/* أول لعبة بعرض كامل، والباقي كل تنتين جنب بعض */}
         <View style={styles.games}>
@@ -331,6 +340,16 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+  },
+  cup: {
+    marginTop: 16,
+    marginHorizontal: 20,
+    padding: 14,
+    borderRadius: 22,
+    backgroundColor: colors.yellow,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   gameWide: { flexBasis: '100%', height: 120, flexDirection: 'row-reverse', alignItems: 'center', paddingHorizontal: 22 },
 });

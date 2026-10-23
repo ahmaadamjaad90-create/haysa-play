@@ -60,10 +60,10 @@ export default function RoomScreen() {
 }
 
 function Voice({ room, isOwner }: { room: RoomRow; isOwner: boolean }) {
-  const { uid } = useSession();
+  const { uid, user } = useSession();
   const v = useVoiceRoom(room.number, room.seats, String(room.number));
   const [admins, setAdmins] = useState<RoomAdmin[]>([]);
-  const isMod = isOwner || admins.some((a) => a.uid === uid);
+  const isMod = isOwner || !!user?.isAdmin || admins.some((a) => a.uid === uid);
   const adminIds = new Set(admins.map((a) => String(a.pid)));
   const [menu, setMenu] = useState<Seat | null>(null);
   const [picker, setPicker] = useState(false);

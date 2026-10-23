@@ -16,6 +16,10 @@ export type User = {
   coins: number;
   gems: number;
   vipPoints: number;
+  // أدمن التطبيق
+  isAdmin: boolean;
+  // محظور لحد هالوقت (null مش محظور)
+  bannedUntil: string | null;
   // false لحد ما يخلص شاشة "خلّينا نعرفك"
   ready: boolean;
 };
@@ -48,6 +52,9 @@ type ProfileRow = {
   coins: number;
   gems: number;
   vip_points: number;
+  // بيجوا من 0023 (ممكن يكونوا ناقصين قبل ما ينشغّل)
+  is_admin?: boolean;
+  banned_until?: string | null;
 };
 
 const Ctx = createContext<Session | null>(null);
@@ -108,6 +115,8 @@ function toUser(p: ProfileRow): User {
     coins: p.coins,
     gems: p.gems,
     vipPoints: p.vip_points,
+    isAdmin: !!p.is_admin,
+    bannedUntil: p.banned_until ?? null,
     ready: !!p.name,
   };
 }
@@ -115,7 +124,7 @@ function toUser(p: ProfileRow): User {
 async function fetchProfile(uid: string): Promise<User> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('public_id, name, avatar, coins, gems, vip_points')
+    .select('*')
     .eq('id', uid)
     .single<ProfileRow>();
   if (error) throw error;

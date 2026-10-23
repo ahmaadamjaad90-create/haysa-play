@@ -67,8 +67,10 @@ Deno.serve(async (req) => {
       if (!room) return json({ error: 'room not found' }, 404);
       const { data: isMod } = await admin.rpc('is_room_mod', { num: number, uid: auth.user.id });
       if (!isMod) return json({ error: 'not a room admin' }, 403);
-      const { data: who } = await admin.from('profiles').select('id').eq('public_id', Number(target)).maybeSingle();
+      const { data: who } = await admin.from('profiles').select('id, is_admin').eq('public_id', Number(target)).maybeSingle();
       if (!who) return json({ error: 'player not found' }, 404);
+      // أدمن التطبيق ما حدا بيقدر عليه
+      if (who.is_admin) return json({ error: 'cannot act on admin' }, 403);
       // ما حدا بيقدر يطرد صاحب الغرفة، والمشرف ما بيقدر على مشرف تاني
       if (who.id === room.owner) return json({ error: 'cannot act on owner' }, 403);
       if (room.owner !== auth.user.id) {
@@ -122,10 +124,14 @@ Deno.serve(async (req) => {
 
     const { data: me } = await admin
       .from('profiles')
-      .select('public_id, name, avatar')
+      .select('public_id, name, avatar, banned_until')
       .eq('id', auth.user.id)
       .single();
     if (!me) return json({ error: 'no profile' }, 400);
+    // محظور من التطبيق كله
+    if (me.banned_until && (me.banned_until === 'infinity' || Date.parse(me.banned_until) > Date.now())) {
+      return json({ error: 'banned', until: me.banned_until }, 403);
+    }
 
     const token = new AccessToken(API_KEY, API_SECRET, {
       identity: String(me.public_id),
