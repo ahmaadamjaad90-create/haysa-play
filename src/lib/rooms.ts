@@ -21,7 +21,8 @@ export type RoomStats = Record<string, { listeners: number; onMic: number }>;
 export const CATEGORIES = ['سوالف', 'ألعاب', 'أغاني', 'شعر', 'عائلة', 'هزار'];
 export const SEAT_PRESETS = [2, 4, 8, 12, 16];
 
-const SELECT = 'owner, number, name, seats, category, game, cover, profiles(name, avatar)';
+// room_admins بيربط rooms و profiles كمان، فلازم نحدد الربط (صاحب الغرفة)
+const SELECT = 'owner, number, name, seats, category, game, cover, profiles!rooms_owner_fkey(name, avatar)';
 
 export async function listRooms(): Promise<RoomRow[]> {
   const { data, error } = await supabase.from('rooms').select(SELECT).order('created_at', { ascending: false }).limit(100);
@@ -93,7 +94,7 @@ export const modAction = (room: number, identity: string, op: 'mute' | 'unseat' 
 export async function listAdmins(owner: string): Promise<RoomAdmin[]> {
   const { data, error } = await supabase
     .from('room_admins')
-    .select('user_id, profiles(public_id, name, avatar)')
+    .select('user_id, profiles!room_admins_user_id_fkey(public_id, name, avatar)')
     .eq('room_owner', owner)
     .order('created_at');
   if (error) throw error;
