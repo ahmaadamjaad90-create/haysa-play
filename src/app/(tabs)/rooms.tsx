@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
@@ -101,6 +102,7 @@ export default function Rooms() {
           return (
             <Pressable key={r.owner} accessibilityRole="button" onPress={() => open(r.number)} style={styles.card}>
               <View style={styles.cardTop}>
+                {!!r.cover && <Image source={{ uri: r.cover }} style={StyleSheet.absoluteFill} contentFit="cover" />}
                 <View style={styles.count}>
                   <FriendsIcon size={14} />
                   <T w="black" style={{ fontSize: 13 }}>{ar(s?.listeners ?? 0)}</T>

@@ -9,6 +9,8 @@ export type RoomRow = {
   profiles: { name: string | null; avatar: string } | null;
   // اللعبة المفتوحة بالغرفة هلأ
   game: RoomGame | null;
+  // رابط صورة الغرفة (من مخزن room-covers)
+  cover: string | null;
 };
 
 export type RoomGame = { game: string; id: number; by: string };
@@ -19,7 +21,7 @@ export type RoomStats = Record<string, { listeners: number; onMic: number }>;
 export const CATEGORIES = ['سوالف', 'ألعاب', 'أغاني', 'شعر', 'عائلة', 'هزار'];
 export const SEAT_PRESETS = [2, 4, 8, 12, 16];
 
-const SELECT = 'owner, number, name, seats, category, game, profiles(name, avatar)';
+const SELECT = 'owner, number, name, seats, category, game, cover, profiles(name, avatar)';
 
 export async function listRooms(): Promise<RoomRow[]> {
   const { data, error } = await supabase.from('rooms').select(SELECT).order('created_at', { ascending: false }).limit(100);
@@ -39,10 +41,29 @@ export async function getMyRoom(uid: string): Promise<RoomRow | null> {
   return data as unknown as RoomRow | null;
 }
 
-export async function saveMyRoom(exists: boolean, uid: string, room: { name: string; seats: number; category: string }) {
-  const q = exists ? supabase.from('rooms').update(room).eq('owner', uid) : supabase.from('rooms').insert(room);
-  const { error } = await q;
+export async function saveMyRoom(
+  exists: boolean,
+  uid: string,
+  room: { name: string; seats: number; category: string; cover?: string | null },
+) {
+  if (!exists) {
+    const { error } = await supabase.from('rooms').insert(room);
+    // الغرفة موجودة أصلاً (ما قدرنا نقراها قبل): منعدّلها بدل ما نعمل وحدة جديدة
+    if (!error) return;
+    if (error.code !== '23505') throw error;
+  }
+  const { error } = await supabase.from('rooms').update(room).eq('owner', uid);
   if (error) throw error;
+}
+
+// صورة الغرفة: بترتفع بمجلّد صاحب الغرفة، وبيرجع رابطها العام
+export async function uploadRoomCover(uid: string, uri: string, mime: string) {
+  const ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg';
+  const body = await (await fetch(uri)).arrayBuffer();
+  const path = `${uid}/cover-${Date.now()}.${ext}`;
+  const { error } = await supabase.storage.from('room-covers').upload(path, body, { contentType: mime, upsert: true });
+  if (error) throw error;
+  return supabase.storage.from('room-covers').getPublicUrl(path).data.publicUrl;
 }
 
 export async function deleteMyRoom(uid: string) {

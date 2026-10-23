@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Animated, FlatList, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
@@ -131,6 +132,7 @@ function Voice({ room, isOwner }: { room: RoomRow; isOwner: boolean }) {
     <Screen>
       <View style={styles.header}>
         <BackButton fallback="/rooms" />
+        {!!room.cover && <Image source={{ uri: room.cover }} style={styles.roomCover} contentFit="cover" />}
         <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
           <T w="black" style={{ fontSize: 19 }} numberOfLines={1}>{room.name}</T>
           <T style={{ fontSize: 13, color: colors.textMuted }}>
@@ -582,5 +584,6 @@ const styles = StyleSheet.create({
   },
   joinBtn: { height: 38, paddingHorizontal: 16, borderRadius: 19, backgroundColor: colors.yellow, justifyContent: 'center' },
   closeBtn: { width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(0,0,0,0.3)', alignItems: 'center', justifyContent: 'center' },
+  roomCover: { width: 44, height: 44, borderRadius: 14 },
   micBtn: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
 });

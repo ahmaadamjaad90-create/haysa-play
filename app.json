@@ -78,7 +78,15 @@
           }
         }
       ],
-      "expo-audio"
+      "expo-audio",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "هيصة بلاي بدها توصل لصورك عشان تختار صورة لغرفتك",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

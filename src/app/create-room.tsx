@@ -1,3 +1,5 @@
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { Redirect, router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
@@ -17,6 +19,7 @@ import {
   listAdmins,
   removeAdmin,
   saveMyRoom,
+  uploadRoomCover,
   type RoomAdmin,
 } from '@/lib/rooms';
 import { useSession } from '@/lib/session';
@@ -35,6 +38,9 @@ export default function CreateRoom() {
   const [adminId, setAdminId] = useState('');
   const [adminMsg, setAdminMsg] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [cover, setCover] = useState<string | null>(null);
+  // صورة جديدة اختارها ولسا ما انرفعت
+  const [picked, setPicked] = useState<{ uri: string; mime: string } | null>(null);
 
   useEffect(() => {
     if (!uid) return;
@@ -45,6 +51,7 @@ export default function CreateRoom() {
         setName(r.name);
         setSeats(r.seats);
         setCategory(r.category);
+        setCover(r.cover);
         listAdmins(uid).then(setAdmins).catch(() => {});
       })
       .catch((e) => setErr(errorText(e)));
@@ -57,12 +64,22 @@ export default function CreateRoom() {
     setBusy(true);
     setErr('');
     try {
-      await saveMyRoom(exists, uid, { name: name.trim(), seats, category });
+      const newCover = picked ? await uploadRoomCover(uid, picked.uri, picked.mime) : cover;
+      await saveMyRoom(exists, uid, { name: name.trim(), seats, category, cover: newCover });
       router.replace({ pathname: '/room', params: { id: String(user.id) } });
     } catch (e) {
       setErr(errorText(e));
       setBusy(false);
     }
+  };
+
+  const pickCover = async () => {
+    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.6 });
+    if (r.canceled || !r.assets[0]) return;
+    const a = r.assets[0];
+    if (a.fileSize && a.fileSize > 2 * 1024 * 1024) return setErr('الصورة كبيرة، اختار وحدة أصغر من 2 ميغا');
+    setErr('');
+    setPicked({ uri: a.uri, mime: a.mimeType ?? 'image/jpeg' });
   };
 
   const add = async () => {
@@ -111,15 +128,21 @@ export default function CreateRoom() {
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 24, flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-        <View style={styles.cover}>
+        <Pressable accessibilityRole="button" accessibilityLabel="اختار صورة للغرفة" onPress={pickCover} style={styles.cover}>
           <View style={styles.coverBox}>
-            <View style={styles.coverBlob} />
-            <View style={{ zIndex: 1 }}>
-              <Dalla width={92} />
-            </View>
+            {picked || cover ? (
+              <Image source={{ uri: picked?.uri ?? cover! }} style={StyleSheet.absoluteFill} contentFit="cover" />
+            ) : (
+              <>
+                <View style={styles.coverBlob} />
+                <View style={{ zIndex: 1 }}>
+                  <Dalla width={92} />
+                </View>
+              </>
+            )}
           </View>
-          <T style={{ fontSize: 13, color: colors.textMuted }}>صورة الغرفة من الجوال قريباً</T>
-        </View>
+          <T w="bold" style={{ fontSize: 13, color: colors.yellow }}>📷 {picked || cover ? 'غيّر الصورة' : 'اختار صورة للغرفة'}</T>
+        </Pressable>
 
         <View style={styles.block}>
           <T w="black" style={styles.label} nativeID="roomNameLabel">اسم الغرفة</T>
